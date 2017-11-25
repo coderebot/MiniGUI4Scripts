@@ -1,0 +1,3 @@
+vxworks_mutex.lo: vxworks_mutex.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

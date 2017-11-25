@@ -1,0 +1,38 @@
+defkeymap.lo: defkeymap.c /usr/include/stdc-predef.h \
+ /usr/include/linux/types.h /usr/include/asm/types.h \
+ /usr/include/asm-generic/types.h /usr/include/asm-generic/int-ll64.h \
+ /usr/include/asm/bitsperlong.h /usr/include/asm-generic/bitsperlong.h \
+ /usr/include/linux/posix_types.h /usr/include/linux/stddef.h \
+ /usr/include/asm/posix_types.h /usr/include/asm/posix_types_32.h \
+ /usr/include/asm-generic/posix_types.h /usr/include/linux/keyboard.h \
+ /usr/include/linux/wait.h /usr/include/linux/kd.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/linux/types.h:
+
+/usr/include/asm/types.h:
+
+/usr/include/asm-generic/types.h:
+
+/usr/include/asm-generic/int-ll64.h:
+
+/usr/include/asm/bitsperlong.h:
+
+/usr/include/asm-generic/bitsperlong.h:
+
+/usr/include/linux/posix_types.h:
+
+/usr/include/linux/stddef.h:
+
+/usr/include/asm/posix_types.h:
+
+/usr/include/asm/posix_types_32.h:
+
+/usr/include/asm-generic/posix_types.h:
+
+/usr/include/linux/keyboard.h:
+
+/usr/include/linux/wait.h:
+
+/usr/include/linux/kd.h:

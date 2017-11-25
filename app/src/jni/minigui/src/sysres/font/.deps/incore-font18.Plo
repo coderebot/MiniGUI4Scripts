@@ -1,0 +1,3 @@
+incore-font18.lo: incore-font18.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

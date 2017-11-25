@@ -1,0 +1,348 @@
+mmonthcalendar.lo: mmonthcalendar.c /usr/include/stdc-predef.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
+ /usr/include/bits/types.h /usr/include/bits/typesizes.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/bits/byteswap-16.h /usr/include/sys/types.h \
+ /usr/include/time.h /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/bits/select2.h /usr/include/sys/sysmacros.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/alloca.h \
+ /usr/include/bits/stdlib-bsearch.h /usr/include/bits/stdlib-float.h \
+ /usr/include/bits/stdlib.h /usr/include/string.h /usr/include/xlocale.h \
+ /usr/include/bits/string.h /usr/include/bits/string2.h \
+ /usr/include/bits/string3.h /usr/include/assert.h \
+ /usr/local/include/minigui/common.h \
+ /usr/local/include/minigui/mgconfig.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/bits/posix1_lim.h \
+ /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+ /usr/include/bits/posix2_lim.h /usr/include/pthread.h \
+ /usr/include/sched.h /usr/include/bits/sched.h \
+ /usr/include/bits/setjmp.h /usr/include/semaphore.h \
+ /usr/include/bits/semaphore.h /usr/local/include/minigui/minigui.h \
+ /usr/local/include/minigui/gdi.h /usr/local/include/minigui/endianrw.h \
+ /usr/local/include/minigui/window.h ../mgncsconfig.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mcommon.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mobject.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mcomponent.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mwidget.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mmonthcalendar.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/piece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/manimateframes.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mbmparrayanimateframes.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mgifanimateframes.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/piece-id.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhotpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/piece-id.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mstaticpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlayoutpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcontainerpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrenderablepiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlabelpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mimagepiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mabstractbuttonpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mbuttonboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mpairpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mpushbuttonpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mimagelabelpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/msliderpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mthumbboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mscrollthumbboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtrackbarpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mboxlayoutpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhboxlayoutpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mvboxlayoutpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcheckboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mradioboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcheckbuttonpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/marrowpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mleftarrowpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrightarrowpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/muparrowpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mdownarrowpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mscrollbarpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/marrowbuttonpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mspinnerpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mspinboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhspinboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mvspinboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mgridboxpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mdaygridpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mmonthpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mnumspinnedpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlistspinnedpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mweekheadpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtoolimgpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/../mpopmenumgr.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/../mtoolitem.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtoolimgitempiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mseparatorpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlinelayoutpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mwidgetwrapperpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrectpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/manimatepiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mprogresspiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mledstaticpiece.h \
+ /home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/msimplelistpiece.h
+
+/usr/include/stdc-predef.h:
+
+/usr/include/stdio.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/waitstatus.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/bits/byteswap-16.h:
+
+/usr/include/sys/types.h:
+
+/usr/include/time.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/bits/select2.h:
+
+/usr/include/sys/sysmacros.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/alloca.h:
+
+/usr/include/bits/stdlib-bsearch.h:
+
+/usr/include/bits/stdlib-float.h:
+
+/usr/include/bits/stdlib.h:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
+
+/usr/include/assert.h:
+
+/usr/local/include/minigui/common.h:
+
+/usr/local/include/minigui/mgconfig.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h:
+
+/usr/include/limits.h:
+
+/usr/include/bits/posix1_lim.h:
+
+/usr/include/bits/local_lim.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/bits/posix2_lim.h:
+
+/usr/include/pthread.h:
+
+/usr/include/sched.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/semaphore.h:
+
+/usr/include/bits/semaphore.h:
+
+/usr/local/include/minigui/minigui.h:
+
+/usr/local/include/minigui/gdi.h:
+
+/usr/local/include/minigui/endianrw.h:
+
+/usr/local/include/minigui/window.h:
+
+../mgncsconfig.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mcommon.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mobject.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mcomponent.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mwidget.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mmonthcalendar.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/piece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/manimateframes.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mbmparrayanimateframes.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/mgifanimateframes.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/piece-id.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhotpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/piece-id.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mstaticpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlayoutpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcontainerpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrenderablepiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlabelpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mimagepiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mabstractbuttonpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mbuttonboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mpairpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mpushbuttonpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mimagelabelpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/msliderpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mthumbboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mscrollthumbboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtrackbarpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mboxlayoutpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhboxlayoutpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mvboxlayoutpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcheckboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mradioboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mcheckbuttonpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/marrowpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mleftarrowpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrightarrowpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/muparrowpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mdownarrowpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mscrollbarpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/marrowbuttonpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mspinnerpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mspinboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mhspinboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mvspinboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mgridboxpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mdaygridpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mmonthpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mnumspinnedpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlistspinnedpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mweekheadpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtoolimgpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/../mpopmenumgr.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/../mtoolitem.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mtoolimgitempiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mseparatorpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mlinelayoutpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mwidgetwrapperpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mrectpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/manimatepiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mprogresspiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/mledstaticpiece.h:
+
+/home/dongjunjie/project/minigui/mgncs/branches/rel-1-0/include/pieces/msimplelistpiece.h:

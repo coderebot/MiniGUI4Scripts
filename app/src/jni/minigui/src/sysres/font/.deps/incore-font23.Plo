@@ -1,0 +1,3 @@
+incore-font23.lo: incore-font23.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

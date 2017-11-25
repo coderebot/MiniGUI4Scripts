@@ -1,0 +1,3 @@
+nucleus_pthread.lo: nucleus_pthread.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

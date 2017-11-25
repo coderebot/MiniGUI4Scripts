@@ -1,0 +1,13 @@
+build.gradle
+*.o
+*.lo
+*.la
+t.txt
+t.cc
+tags
+objs/
+libs/
+local.properties
+.gradle/
+*.swp
+*~

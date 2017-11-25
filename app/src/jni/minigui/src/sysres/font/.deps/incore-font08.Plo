@@ -1,0 +1,3 @@
+incore-font08.lo: incore-font08.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

@@ -1,0 +1,3 @@
+sysvipc_private.lo: sysvipc_private.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

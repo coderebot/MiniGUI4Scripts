@@ -1,0 +1,5 @@
+winial.lo: winial.c /usr/include/stdc-predef.h ../../mgconfig.h
+
+/usr/include/stdc-predef.h:
+
+../../mgconfig.h:

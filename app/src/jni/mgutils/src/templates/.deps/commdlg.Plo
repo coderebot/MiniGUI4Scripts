@@ -1,0 +1,222 @@
+commdlg.lo: commdlg.c /usr/include/stdc-predef.h \
+ /usr/local/include/minigui/common.h \
+ /usr/local/include/minigui/mgconfig.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h \
+ /usr/include/limits.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h /usr/include/bits/posix1_lim.h \
+ /usr/include/bits/local_lim.h /usr/include/linux/limits.h \
+ /usr/include/bits/posix2_lim.h /usr/include/alloca.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h /usr/include/pthread.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/bits/byteswap-16.h \
+ /usr/include/sched.h /usr/include/time.h /usr/include/bits/sched.h \
+ /usr/include/bits/time.h /usr/include/xlocale.h \
+ /usr/include/bits/pthreadtypes.h /usr/include/bits/setjmp.h \
+ /usr/include/semaphore.h /usr/include/sys/types.h \
+ /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/select2.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/semaphore.h \
+ /usr/local/include/minigui/minigui.h /usr/include/stdio.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
+ /usr/local/include/minigui/gdi.h /usr/include/stdlib.h \
+ /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
+ /usr/include/bits/stdlib-bsearch.h /usr/include/bits/stdlib-float.h \
+ /usr/include/bits/stdlib.h /usr/local/include/minigui/endianrw.h \
+ /usr/local/include/minigui/window.h /usr/local/include/minigui/common.h \
+ /usr/local/include/minigui/control.h \
+ /usr/local/include/minigui/ctrl/ctrlhelper.h \
+ /usr/local/include/minigui/ctrl/static.h \
+ /usr/local/include/minigui/ctrl/button.h \
+ /usr/local/include/minigui/ctrl/edit.h \
+ /usr/local/include/minigui/ctrl/progressbar.h \
+ /usr/local/include/minigui/ctrl/listbox.h \
+ /usr/local/include/minigui/ctrl/propsheet.h \
+ /usr/local/include/minigui/ctrl/combobox.h \
+ /usr/local/include/minigui/ctrl/newtoolbar.h \
+ /usr/local/include/minigui/ctrl/menubutton.h \
+ /usr/local/include/minigui/ctrl/trackbar.h \
+ /usr/local/include/minigui/ctrl/scrollview.h \
+ /usr/local/include/minigui/ctrl/scrollbar.h \
+ /usr/local/include/minigui/ctrl/textedit.h \
+ /usr/local/include/minigui/ctrl/spinbox.h \
+ /usr/local/include/minigui/ctrl/monthcal.h \
+ /usr/local/include/minigui/ctrl/coolbar.h \
+ /usr/local/include/minigui/ctrl/listview.h \
+ /usr/local/include/minigui/ctrl/treeview.h \
+ /usr/local/include/minigui/ctrl/iconview.h \
+ /usr/local/include/minigui/ctrl/animation.h ../../include/mgutils.h \
+ /usr/include/dirent.h /usr/include/bits/dirent.h
+
+/usr/include/stdc-predef.h:
+
+/usr/local/include/minigui/common.h:
+
+/usr/local/include/minigui/mgconfig.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/limits.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed/syslimits.h:
+
+/usr/include/limits.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-32.h:
+
+/usr/include/bits/posix1_lim.h:
+
+/usr/include/bits/local_lim.h:
+
+/usr/include/linux/limits.h:
+
+/usr/include/bits/posix2_lim.h:
+
+/usr/include/alloca.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h:
+
+/usr/include/pthread.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/bits/byteswap-16.h:
+
+/usr/include/sched.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/semaphore.h:
+
+/usr/include/sys/types.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/bits/select2.h:
+
+/usr/include/sys/sysmacros.h:
+
+/usr/include/bits/semaphore.h:
+
+/usr/local/include/minigui/minigui.h:
+
+/usr/include/stdio.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
+
+/usr/local/include/minigui/gdi.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/waitstatus.h:
+
+/usr/include/bits/stdlib-bsearch.h:
+
+/usr/include/bits/stdlib-float.h:
+
+/usr/include/bits/stdlib.h:
+
+/usr/local/include/minigui/endianrw.h:
+
+/usr/local/include/minigui/window.h:
+
+/usr/local/include/minigui/common.h:
+
+/usr/local/include/minigui/control.h:
+
+/usr/local/include/minigui/ctrl/ctrlhelper.h:
+
+/usr/local/include/minigui/ctrl/static.h:
+
+/usr/local/include/minigui/ctrl/button.h:
+
+/usr/local/include/minigui/ctrl/edit.h:
+
+/usr/local/include/minigui/ctrl/progressbar.h:
+
+/usr/local/include/minigui/ctrl/listbox.h:
+
+/usr/local/include/minigui/ctrl/propsheet.h:
+
+/usr/local/include/minigui/ctrl/combobox.h:
+
+/usr/local/include/minigui/ctrl/newtoolbar.h:
+
+/usr/local/include/minigui/ctrl/menubutton.h:
+
+/usr/local/include/minigui/ctrl/trackbar.h:
+
+/usr/local/include/minigui/ctrl/scrollview.h:
+
+/usr/local/include/minigui/ctrl/scrollbar.h:
+
+/usr/local/include/minigui/ctrl/textedit.h:
+
+/usr/local/include/minigui/ctrl/spinbox.h:
+
+/usr/local/include/minigui/ctrl/monthcal.h:
+
+/usr/local/include/minigui/ctrl/coolbar.h:
+
+/usr/local/include/minigui/ctrl/listview.h:
+
+/usr/local/include/minigui/ctrl/treeview.h:
+
+/usr/local/include/minigui/ctrl/iconview.h:
+
+/usr/local/include/minigui/ctrl/animation.h:
+
+../../include/mgutils.h:
+
+/usr/include/dirent.h:
+
+/usr/include/bits/dirent.h:

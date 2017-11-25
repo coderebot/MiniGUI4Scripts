@@ -1,0 +1,3 @@
+ucos2_pthread.lo: ucos2_pthread.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:

@@ -1,0 +1,3 @@
+ose_sem.lo: ose_sem.c /usr/include/stdc-predef.h
+
+/usr/include/stdc-predef.h:
