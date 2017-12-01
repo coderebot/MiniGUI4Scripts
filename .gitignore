@@ -2,6 +2,8 @@ build.gradle
 *.o
 *.lo
 *.la
+*.a
+*.so
 t.txt
 t.cc
 tags
@@ -11,3 +13,4 @@ local.properties
 .gradle/
 *.swp
 *~
+.x-history

@@ -2,6 +2,7 @@
 from lxml import etree
 import os
 import sys
+import re
 
 def read_enum(e):
     enum = {}
@@ -83,8 +84,10 @@ def readWidgets(widgets_dir):
 
     for dirpath,dirnames,filenames in os.walk(widgets_dir):
         for fl in filenames:
-            filepath = os.path.join(dirpath, fl)
-            doms.append(etree.parse(filepath))
+            ext_name = os.path.splitext(fl)[1]
+            if ext_name == '.xml':
+                filepath = os.path.join(dirpath, fl)
+                doms.append(etree.parse(filepath))
 
     while len(doms) > 0:
         for d in doms:
@@ -147,18 +150,18 @@ def readWidgets(widgets_dir):
     return widgets,types
 
 ######################################################
-PropDefineTemplate = '''\
-    pwidget->addProperty(new Property(
+PropDefineTemplate = '''
+    propMaps["%(prop_name)s"] = new Property(
                 "%(prop_name)s",
                 %(prop_type)s,
                 %(prop_id)d,
-                %(prop_access)s));
+                %(prop_access)s);
 '''
 
 
 WidgetClassTemplate = '''\
 {
-    WidgetClassDefine * pwidget = new WidgetClassDefine("%(className)s");
+    WidgetClassDefine * pwidget = new WidgetClassDefine("%(className)s", (mWidgetClass*)(&(Class(m%(className)s))));
     widgetClasses.push_back(pwidget);
     %(prop_defines)s
 }
@@ -167,6 +170,12 @@ WidgetClassTemplate = '''\
 FrameworkTemplate = '''\
 static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     %(widget_classes)s
+}
+'''
+
+PropFrameBase = '''
+static void create_all_props(map<string, Property*> &propMaps) {
+    %(prop_defines)s
 }
 '''
 
@@ -179,6 +188,17 @@ static void create_enum_types(map<string, EnumType*>& enumMaps) {
 PropTypeTemplate = '''
     enumMaps["%(name)s"] = EnumType::create("%(name)s", %(options_list)s NULL);
 '''
+
+EventFrameBase = '''
+static void init_event_ids(map<string, int>& eventMaps) {
+    %(event_defines)s
+}
+'''
+EventTemplate = '''
+    eventMaps["%(handler)s"] = %(code)s;
+'''
+
+widget_excluede = set(['TextEditor', 'PhoneBar', 'IMWordSel'])
 
 def getOptionList(enum):
     options = ''
@@ -210,6 +230,8 @@ def sort_widgets(widgets):
     founded = {}
     sorted_widgets = []
     for n,w in widgets.items():
+        if n in widget_excluede:
+            continue
         add_widget(w, sorted_widgets, founded)
 
     return sorted_widgets
@@ -252,19 +274,58 @@ def gen_prop_type(tp):
         else:
             return 'EnumType::create(NULL, %s NULL)' % (getOptionList(tp))
 
-def gen_prop(prop, widget):
+def gen_prop(prop):
     args = {}
     args['prop_name'] = prop['name']
     args['prop_id'] = prop['id']
-    args['prop_access'] = gen_prop_access(widget, prop)
+    args['prop_access'] = 'Property::RDWT' #gen_prop_access(widget, prop)
     args['prop_type'] = gen_prop_type(prop['type'])
 
     return PropDefineTemplate % args
 
+def gen_widget_prop(prop, widget):
+    return '\tpwidget->addProperty(getNamedProperty("%s"));\n' % (prop['name'])
+
+
+def genAllProps(widgets):
+    props = {}
+    prop_strs = ''
+    for w in widgets:
+        for k, p in w['props'].items():
+            if k not in props:
+                props[k] = p
+                prop_strs = prop_strs + gen_prop(p)
+    return PropFrameBase % {'prop_defines': prop_strs}
+
+
+def gen_event(handler, evt_code):
+    return EventTemplate % {'handler':handler, 'code':evt_code}
+
+def getHandler(handler):
+    m = re.match("\w+\s+(\w+)\([^\)]*\)",handler)
+    if m:
+        return m.group(1)
+    return handler
+
+
+def genAllEvents(widgets):
+    events = {}
+    event_strs = ''
+    for w in widgets:
+        for evt in w['events']:
+            handler = getHandler(evt['handler'])
+            evt_code = evt['code']
+            if handler in events:
+                continue
+            events[handler] = evt_code
+            event_strs = event_strs + gen_event(handler, evt_code)
+    return EventFrameBase % {'event_defines':event_strs}
+
+
 def gen_props(widget):
     props_str = ''
     for k, prop in widget['props'].items():
-        props_str = props_str + gen_prop(prop, widget)
+        props_str = props_str + gen_widget_prop(prop, widget)
     return props_str
 
 
@@ -287,6 +348,10 @@ def genCodes(widget_dirs, out_file):
     typecodes = genEnumTypes(types)
     fout.write(typecodes)
     sorted_widgets = sort_widgets(widgets)
+    all_props = genAllProps(sorted_widgets)
+    fout.write(all_props)
+    all_events = genAllEvents(sorted_widgets)
+    fout.write(all_events)
     #dump_sorted_widgets(sorted_widgets)
     widgets_code = genWidgets(sorted_widgets)
     fout.write(widgets_code)

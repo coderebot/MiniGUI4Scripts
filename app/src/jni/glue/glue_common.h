@@ -110,19 +110,28 @@ struct Property {
         this->id = id;
         this->access = access;
     }
+
+    static Property* getProperty(const char* name);
 };
 
 class WidgetClassDefine {
 
+    mWidgetClass * ownerClass;
     string className;
     vector<Property*> properties;
 
+    void * glueObject;
+
 public:
-    WidgetClassDefine(const char* name) {
+    WidgetClassDefine(const char* name, mWidgetClass* ownerClass) {
         className = name;
+        this->ownerClass = ownerClass;
+        glueObject = NULL;
     }
     ~WidgetClassDefine() {
     }
+
+    mWidgetClass * getOwnerClass() { return ownerClass; }
 
     const char* getClassName() {
         return className.c_str();
@@ -138,6 +147,23 @@ public:
     void addProperty(Property* prop) {
         properties.push_back(prop);
     }
+
+    template<typename T>
+    T* getGlueObject() {
+        return (T*)glueObject;
+    }
+
+    template<typename T>
+    void setGlueObject(T * obj) {
+        glueObject = (void*)obj;
+    }
+
+    static WidgetClassDefine * getClassDefine(mWidgetClass* ownerClass);
+
+private:
+    static void addClassDefine(WidgetClassDefine* define);
+
+    static map<mWidgetClass*, WidgetClassDefine*> widgetMaps;
 };
 
 enum {
@@ -146,8 +172,14 @@ enum {
 };
 
 
+int GetEventIdByName(const char* name);
+
+bool InitGlue();
+
 void* GetWidgetEventHandlers(mWidget *widget);
 void SetWidgetEventHandlers(mWidget* widget, void *pt);
+
+unsigned long RunScript(const char* script, const char* filename);
 
 }
 

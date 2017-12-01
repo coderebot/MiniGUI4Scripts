@@ -28,7 +28,10 @@ static PropType* _base_types [] = {
 };
 
 static map<string, EnumType*> sNamedEnumTypes;
+static map<string, Property*> sNamedProperties;
+static map<string, int> sNamedEventIds;
 
+map<mWidgetClass*, WidgetClassDefine*> WidgetClassDefine::widgetMaps;
 
 static PropType * getPropType(int type) {
     if (type >= 0 && type < PropType::ENUM) {
@@ -36,6 +39,18 @@ static PropType * getPropType(int type) {
     }
 
     return NULL;
+}
+
+static Property* getNamedProperty(const char* name) {
+    map<string, Property*>::iterator it = sNamedProperties.find(name);
+    if (it == sNamedProperties.end()) {
+        return NULL;
+    }
+    return it->second;
+}
+
+Property* Property::getProperty(const char* name) {
+    return getNamedProperty(name);
 }
 
 static PropType * getNamedEnumType(const char* name) {
@@ -71,6 +86,19 @@ EnumType* EnumType::create(const char* name, ...) {
     va_end(arg);
 }
 
+void WidgetClassDefine::addClassDefine(WidgetClassDefine* define) {
+    widgetMaps[define->getOwnerClass()] = define;
+}
+
+WidgetClassDefine* WidgetClassDefine::getClassDefine(mWidgetClass* ownerClass) {
+    map<mWidgetClass*, WidgetClassDefine*>::iterator it =
+            widgetMaps.find(ownerClass);
+    if (it == widgetMaps.end()) {
+        return NULL;
+    }
+
+    return it->second;
+}
 
 void* GetWidgetEventHandlers(mWidget *widget) {
     BOOL ok = FALSE;
@@ -82,8 +110,41 @@ void SetWidgetEventHandlers(mWidget* widget, void *pt) {
 }
 
 
+int GetEventIdByName(const char* name) {
+    map<string, int>::iterator it = sNamedEventIds.find(name);
+    if (it == sNamedEventIds.end()) {
+        return -1;
+    }
+    return it->second;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 
 #include "widget_classes_list.cpp"
+
+
+bool InitGlue() {
+    create_enum_types(sNamedEnumTypes);
+    create_all_props(sNamedProperties);
+    init_widget_class(sWidgetClasses);
+    init_event_ids(sNamedEventIds);
+    return true;
+}
+
+
+extern "C" unsigned long RunV8Script(const char* script, const char* filename);
+
+unsigned long RunScript(const char* script, const char* filename) {
+
+    const char* str_ext = strrchr(filename, '.');
+    if (str_ext && strcmp(str_ext, ".js") == 0) {
+        return RunV8Script(script, filename);
+    }
+
+    ALOGE("MiniGUI Script", "unkwown script type:%s", filename);
+    return 0;
+}
+
 
 }

@@ -12,6 +12,7 @@
 #include "window.h"
 #include "mgncs.h"
 #include "android-backend.h"
+#include "glue/glue_common.h"
 #include "miui-base.h"
 
 JavaVM * g_jvm = NULL;
@@ -63,6 +64,47 @@ static void drawRect(HDC hdc, int x, int y, int w, int h, DWORD color) {
 
 }
 
+static bool start_with(const char* s, const char* start) {
+    if (s == NULL || start == NULL) return false;
+
+    int len = strlen(start);
+    return (strncmp(s, start, len) == 0);
+}
+
+unsigned long RunScript(const char* filename) {
+    if (filename == NULL) {
+        ALOGE("MiniGUI", "Invalidate Script Filename NULL");
+        return 0;
+    }
+
+    char * source = NULL;
+
+    if (start_with(filename, "asset://")) {
+        //TODO
+        return 0;
+    } else {
+        FILE* fp = fopen(filename, "rt");
+        if (fp == NULL) {
+            ALOGE("MiniGUI", "Cannot open the file: %s", filename);
+            return 0;
+        }
+        fseek(fp, 0, SEEK_END);
+        size_t len = ftell(fp);
+        source = new char[len+1];
+        fread(source, 1, len, fp);
+        source[len] = 0;
+        fclose(fp);
+    }
+
+    if (source) {
+        unsigned long ret = glue::RunScript(source, filename);
+        delete[] source;
+        return ret;
+    } else {
+        return 0;
+    }
+
+}
 
 #include "test-button.c"
 static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jobject strarry) {
@@ -72,8 +114,13 @@ static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jobj
 
     g_ncsEtcHandle = __mgncs_get_mgetc();
     ncsInitialize();
+    if (!glue::InitGlue()) {
+        ALOGE("MiniGUI", "cannot init glue");
+        return 0;
+    }
 
-    return (jlong)create_button_dialog();
+    //return (jlong)create_button_dialog();
+    return (jlong)RunScript("/data/test.js");
 }
 
 static jboolean jni_processMessage(JNIEnv* env, jclass, jlong hwnd) {
