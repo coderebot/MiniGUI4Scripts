@@ -16,7 +16,8 @@ LOCAL_MULTILIB := "both"
 LOCAL_MODULE    := minigui
 
 glue_sources= glue/glue_common.cpp \
-			  glue/v8_glue.cpp
+			  glue/v8_glue.cpp \
+			  glue/glue_utils.cpp
 
 LOCAL_SRC_FILES := $(minigui_sources) \
 	$(mgutils_sources) \

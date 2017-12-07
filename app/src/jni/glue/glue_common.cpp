@@ -3,6 +3,7 @@
 #include <stdarg.h>
 
 #include "glue_common.h"
+#include "glue_utils.h"
 
 namespace glue {
 
@@ -27,11 +28,12 @@ static PropType* _base_types [] = {
     &_rdr_type
 };
 
-static map<string, EnumType*> sNamedEnumTypes;
-static map<string, Property*> sNamedProperties;
-static map<string, int> sNamedEventIds;
+static map<string, EnumType*> *sNamedEnumTypes;
+static map<string, Property*> *sNamedProperties;
+static map<string, int> *sNamedEventIds;
 
-map<mWidgetClass*, WidgetClassDefine*> WidgetClassDefine::widgetMaps;
+map<mWidgetClass*, WidgetClassDefine*>* WidgetClassDefine::sWidgetMaps;
+map<string, WidgetClassDefine*>* WidgetClassDefine::sNamedWidgetMaps;
 
 static PropType * getPropType(int type) {
     if (type >= 0 && type < PropType::ENUM) {
@@ -42,8 +44,8 @@ static PropType * getPropType(int type) {
 }
 
 static Property* getNamedProperty(const char* name) {
-    map<string, Property*>::iterator it = sNamedProperties.find(name);
-    if (it == sNamedProperties.end()) {
+    map<string, Property*>::iterator it = sNamedProperties->find(name);
+    if (it == sNamedProperties->end()) {
         return NULL;
     }
     return it->second;
@@ -54,8 +56,8 @@ Property* Property::getProperty(const char* name) {
 }
 
 static PropType * getNamedEnumType(const char* name) {
-    map<string, EnumType*>::iterator it = sNamedEnumTypes.find(name);
-    if (it == sNamedEnumTypes.end()) {
+    map<string, EnumType*>::iterator it = sNamedEnumTypes->find(name);
+    if (it == sNamedEnumTypes->end()) {
         return NULL;
     }
 
@@ -84,20 +86,67 @@ EnumType* EnumType::create(const char* name, ...) {
     }
 
     va_end(arg);
+    return ptype;
+}
+
+PropType* PropValue::getPropType() {
+    return prop ? prop->type : NULL;
 }
 
 void WidgetClassDefine::addClassDefine(WidgetClassDefine* define) {
-    widgetMaps[define->getOwnerClass()] = define;
+    if (sWidgetMaps == NULL) {
+        sWidgetMaps = new map<mWidgetClass*, WidgetClassDefine*>;
+    }
+    (*sWidgetMaps)[define->getOwnerClass()] = define;
+
+    if (sNamedWidgetMaps == NULL) {
+        sNamedWidgetMaps = new map<string, WidgetClassDefine*>;
+    }
+    (*sNamedWidgetMaps)[define->className] = define;
 }
 
 WidgetClassDefine* WidgetClassDefine::getClassDefine(mWidgetClass* ownerClass) {
+    if (sWidgetMaps == NULL) return NULL;
     map<mWidgetClass*, WidgetClassDefine*>::iterator it =
-            widgetMaps.find(ownerClass);
-    if (it == widgetMaps.end()) {
+            sWidgetMaps->find(ownerClass);
+    if (it == sWidgetMaps->end()) {
         return NULL;
     }
 
     return it->second;
+}
+
+WidgetClassDefine* WidgetClassDefine::getClassDefine(const char* name) {
+    if (sNamedWidgetMaps == NULL) return NULL;
+
+    map<string, WidgetClassDefine*>::iterator it =
+        sNamedWidgetMaps->find(name);
+    if (it == sNamedWidgetMaps->end()) {
+        return NULL;
+    }
+    return it->second;
+}
+
+void WidgetClassDefine::initWndTemplateByDefaults(WndTemplateBuilder* pbuilder) {
+    if (getParent()) {
+        getParent()->initWndTemplateByDefaults(pbuilder);
+    }
+
+    for(map<string, Property*>::iterator it = properties.begin();
+            it != properties.end(); ++ it) {
+        Property* prop = it->second;
+        if (prop->hasDefValue()) {
+            pbuilder->setProp(prop->id, prop->getDefValue());
+        }
+    }
+
+    for(map<string, PropValue*>::iterator it = defValues.begin();
+            it != defValues.end(); ++ it) {
+        PropValue* defVal = it->second;
+        pbuilder->setProp(defVal->prop->id, defVal->to());
+    }
+
+    pbuilder->setWndClassName(ownerClass->className);
 }
 
 void* GetWidgetEventHandlers(mWidget *widget) {
@@ -111,8 +160,8 @@ void SetWidgetEventHandlers(mWidget* widget, void *pt) {
 
 
 int GetEventIdByName(const char* name) {
-    map<string, int>::iterator it = sNamedEventIds.find(name);
-    if (it == sNamedEventIds.end()) {
+    map<string, int>::iterator it = sNamedEventIds->find(name);
+    if (it == sNamedEventIds->end()) {
         return -1;
     }
     return it->second;
@@ -125,10 +174,13 @@ int GetEventIdByName(const char* name) {
 
 
 bool InitGlue() {
-    create_enum_types(sNamedEnumTypes);
-    create_all_props(sNamedProperties);
+    sNamedEnumTypes = new map<string, EnumType*>;
+    sNamedProperties = new map<string, Property*>;
+    sNamedEventIds = new map<string, int>;
+    create_enum_types(*sNamedEnumTypes);
+    create_all_props(*sNamedProperties);
+    init_event_ids(*sNamedEventIds);
     init_widget_class(sWidgetClasses);
-    init_event_ids(sNamedEventIds);
     return true;
 }
 

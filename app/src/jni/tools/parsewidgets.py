@@ -155,7 +155,8 @@ PropDefineTemplate = '''
                 "%(prop_name)s",
                 %(prop_type)s,
                 %(prop_id)d,
-                %(prop_access)s);
+                %(prop_access)s,
+                %(prop_default)s);
 '''
 
 
@@ -164,6 +165,7 @@ WidgetClassTemplate = '''\
     WidgetClassDefine * pwidget = new WidgetClassDefine("%(className)s", (mWidgetClass*)(&(Class(m%(className)s))));
     widgetClasses.push_back(pwidget);
     %(prop_defines)s
+    %(default_values)s
 }
 '''
 
@@ -198,7 +200,7 @@ EventTemplate = '''
     eventMaps["%(handler)s"] = %(code)s;
 '''
 
-widget_excluede = set(['TextEditor', 'PhoneBar', 'IMWordSel'])
+widget_excluede = set(['TextEditor', 'PhoneBar', 'IMWordSel', 'MlEdit'])
 
 def getOptionList(enum):
     options = ''
@@ -259,7 +261,20 @@ base_type_map = {
     'image': 'PropType::IMAGE',
     'group': 'PropType::GROUP',
     'renderer':'PropType::RDR',
-    'font':'PropType::FONT'
+    'font':'PropType::FONT',
+    'char':'PropType::INT'
+}
+
+base_value_type_map = {
+    'int' : 'int',
+    'color': 'int',
+    'char':'char',
+    'text' : 'string',
+    'image' : 'string',
+    'group' : 'int',
+    'renderer' : 'int',
+    'font': 'string',
+    'string' : 'string',
 }
 
 def gen_prop_type(tp):
@@ -274,12 +289,39 @@ def gen_prop_type(tp):
         else:
             return 'EnumType::create(NULL, %s NULL)' % (getOptionList(tp))
 
+def gen_create_prop_value(tp, value):
+    value_type = None
+    if type(tp) == dict:
+        value_type = 'string'
+    elif tp in base_value_type_map:
+        value_type = base_value_type_map[tp]
+    else:
+        return 'NULL'
+
+    if value_type == 'string':
+        return 'new PropValue(NULL, "%s")' % value
+    elif value_type == 'int':
+        return 'new PropValue(NULL, (long)%s)' % value
+    elif value_type == 'char':
+        return 'new PropValue(NULL, (long)\'%s\')' % value[0]
+    else:
+        return 'NULL'
+
+
+def gen_prop_def_value(prop):
+    if 'default' in prop:
+        tp = prop['type']
+        return gen_create_prop_value(tp, prop['default'])
+    else:
+        return "NULL"
+
 def gen_prop(prop):
     args = {}
     args['prop_name'] = prop['name']
     args['prop_id'] = prop['id']
     args['prop_access'] = 'Property::RDWT' #gen_prop_access(widget, prop)
     args['prop_type'] = gen_prop_type(prop['type'])
+    args['prop_default'] = gen_prop_def_value(prop)
 
     return PropDefineTemplate % args
 
@@ -329,10 +371,34 @@ def gen_props(widget):
     return props_str
 
 
+def get_widget_property(widget, prop_name):
+    if prop_name in widget['props']:
+        return widget['props'][prop_name]
+    if 'extends' in widget:
+        return get_widget_property(widget['extends'], prop_name)
+    return None
+
+def gen_default_value(widget, name, value):
+    prop = get_widget_property(widget, name)
+    if not prop:
+        return ''
+    return '\tpwidget->setDefPropValue("%(prop_name)s", %(prop_value)s);\n' % \
+            {'prop_name':name, 'prop_value':gen_create_prop_value(prop['type'], value)}
+
+def gen_defaultValues(widget):
+    defaults = widget['defaults']
+    def_str = ''
+    for name, value in defaults.items():
+        def_str = def_str + gen_default_value(widget, name, value)
+    return def_str
+
+
+
 def genWidget(widget):
     args = {'className': widget['class']}
     args['prop_defines'] = gen_props(widget)
     args['event_defines'] = gen_events(widget)
+    args['default_values'] = gen_defaultValues(widget)
     return WidgetClassTemplate % args
 
 def genWidgets(widgets):

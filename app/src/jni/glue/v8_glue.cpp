@@ -9,6 +9,7 @@
 #include "window.h"
 #include "mgncs.h"
 #include "miui-base.h"
+#include "glue_utils.h"
 
 using namespace v8;
 using namespace glue;
@@ -18,16 +19,16 @@ template <typename R>
 struct TypeValue { };
 
 static Local<String> toV8String(Isolate* isolate, const char* str) {
-    return v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized).ToLocalChecked();
+    return v8::String::NewFromUtf8(isolate, str, NewStringType::kNormal).ToLocalChecked();
 }
 
-static const char* toString(Isolate* isolate, Local<Value> str) {
+static string toString(Isolate* isolate, Local<Value> str) {
     if (str.IsEmpty()) {
-        return NULL;
+        return string();
     }
 
     String::Utf8Value utf8str(str);
-    return *utf8str;
+    return string(*utf8str);
 }
 
 static Local<String> toV8String(Isolate* isolate, const string& str) {
@@ -76,7 +77,13 @@ struct TypeValue<const char*> {
             return DefaultValue();
         }
         String::Utf8Value strval (val);
-        return *strval;
+        const char* p = *strval;
+        if (p) {
+            char* pret = strdup(p);
+            ThreadLocalHolder::push(pret);
+            return pret;
+        }
+        return NULL;
     }
     static Local<Value> To(Isolate* isolate, const char* str) {
         return toV8String(isolate, str);
@@ -121,6 +128,65 @@ static Local<Value> fromPropValue(Isolate* isolate, PropType *prop_type, DWORD d
         return TypeValue<unsigned int>::To(isolate, dwVal);
     }
     return Local<Value>();
+}
+
+static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
+    int len = strlen(prefix);
+#define _D_TMP(format, member) ALOGI("MiniGUIV8", "\t%s"#member "= " format, prefix, tmpl->member)
+    ALOGI("MiniGUIV8", "%s{", prefix);
+    _D_TMP("%s", class_name);
+    _D_TMP("%d", id);
+    _D_TMP("%d", x);
+    _D_TMP("%d", y);
+    _D_TMP("%d", w);
+    _D_TMP("%d", h);
+    _D_TMP("0x%08X", style);
+    _D_TMP("0x%08X", ex_style);
+    _D_TMP("%s", caption);
+    if (tmpl->props) {
+        for (int i = 0; tmpl->props[i].id > 0; i++) {
+            ALOGI("MiniGUIV8", "\t%sProp %d=0x%08x", prefix, tmpl->props[i].id, tmpl->props[i].value);
+        }
+    }
+    if (tmpl->rdr_info) {
+        ALOGI("MiniGUIV8", "\t%sglobal render=%s", tmpl->rdr_info->glb_rdr);
+        ALOGI("MiniGUIV8", "\t%scontrol render=%s", tmpl->rdr_info->ctl_rdr);
+        if (tmpl->rdr_info->elements) {
+            for(int i = 0; tmpl->rdr_info->elements[i].id > 0; i++) {
+                ALOGI("MiniGUIV8", "\t%sRdr %d=0x%08x", tmpl->rdr_info->elements[i].id, tmpl->rdr_info->elements[i].value);
+            }
+        }
+    }
+
+    if(tmpl->handlers) {
+        for (int i = 0; tmpl->handlers[i].handler != NULL; i++) {
+            ALOGI("MiniGUIV8", "\t%sHandler message %d: handler:%p", tmpl->handlers[i].message, tmpl->handlers[i].handler);
+        }
+    }
+
+    _D_TMP("0x%08x", bk_color);
+    _D_TMP("%s", font_name);
+
+    if (tmpl->ctrls) {
+        prefix[len] = '\t';
+        prefix[len+1] = '\0';
+        for (int i = 0; i < tmpl->count; i++) {
+            dumpWndTemplate(&tmpl->ctrls[i], prefix);
+        }
+        prefix[len] = '\0';
+    }
+
+    ALOGI("MiniGUIV8", "%s}", prefix);
+#undef _D_TMP
+}
+
+
+static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl) {
+    char szPrefix[64] = "\0";
+    dumpWndTemplate(tmpl, szPrefix);
+}
+static void dumpWndTemplate(const NCS_MNWND_TEMPLATE* tmp) {
+    dumpWndTemplate((const NCS_WND_TEMPLATE*)tmp);
 }
 
 
@@ -358,11 +424,6 @@ static Local<FunctionTemplate> getWidgetFunctionTemplate(Isolate* isolate, Widge
     return Local<FunctionTemplate>::New(isolate, *f);
 }
 
-static Local<FunctionTemplate> getWidgetFunctionTemplate(Isolate* isolate, mWidget *widget) {
-    WidgetClassDefine * widget_clzz_def = WidgetClassDefine::getClassDefine(_c(widget));
-    return getWidgetFunctionTemplate(isolate, widget_clzz_def);
-}
-
 static void addWidgetFunctionTemplate(Isolate* isolate, WidgetClassDefine* widget, Local<FunctionTemplate> func_tmpl) {
 
     Persistent<FunctionTemplate>* f =
@@ -412,7 +473,7 @@ static Local<FunctionTemplate> getAndInstallWidgetFunctionTemplate(Isolate* isol
     if (f == NULL) {
         f = new Persistent<FunctionTemplate>();
         widget->setGlueObject(f);
-        createWidgetClass(isolate, widget);
+        f->Reset(isolate, createWidgetClass(isolate, widget));
     }
     return getWidgetFunctionTemplate(isolate, widget);
 }
@@ -431,13 +492,13 @@ static Local<FunctionTemplate> createWidgetClass(Isolate* isolate, WidgetClassDe
         func_tmpl->Inherit(parent);
     }
 
-    vector<Property*> &props = widget->getProperties();
-    for (vector<Property*>::iterator it = props.begin(); it != props.end(); ++it) {
-        Property* prop = *it;
+    map<string,Property*> &props = widget->getProperties();
+    for (map<string,Property*>::iterator it = props.begin(); it != props.end(); ++it) {
+        Property* prop = it->second;
         Local<External> prop_data = External::New(isolate, prop);
         prototype->SetAccessor(toV8String(isolate, prop->name),
-                prop->readable() ? widget_prop_get: NULL,
-                prop->writeable() ? widget_prop_set: NULL,
+                widget_prop_get,
+                widget_prop_set,
                 prop_data);
     }
 
@@ -447,11 +508,16 @@ static Local<FunctionTemplate> createWidgetClass(Isolate* isolate, WidgetClassDe
     return func_tmpl;
 }
 
+static Local<FunctionTemplate> getWidgetFunctionTemplate(Isolate* isolate, mWidget *widget) {
+    WidgetClassDefine * widget_clzz_def = WidgetClassDefine::getClassDefine(_c(widget));
+    return getAndInstallWidgetFunctionTemplate(isolate, widget_clzz_def);
+}
+
 static void dumpV8Exception(v8::Isolate* isolate, v8::TryCatch* tryCatch) {
     v8::String::Utf8Value exception(tryCatch->Exception());
     v8::Handle<v8::Message> message = tryCatch->Message();
     if (message.IsEmpty()) {
-        ALOGE("WSSERVER", "%s", *exception);
+        ALOGE("MiniGUIV8", "%s", *exception);
         return ;
     } else {
         v8::String::Utf8Value filename(message->GetScriptResourceName());
@@ -464,114 +530,83 @@ static void dumpV8Exception(v8::Isolate* isolate, v8::TryCatch* tryCatch) {
                 message->GetSourceLine(isolate->GetCurrentContext()).ToLocalChecked());
         const char* sourceline_str = *sourceline;
 
-        ALOGE("WSSERVER.ERR", "%s", sourceline_str);
-        ALOGE("WSSERVER.ERR", "%s:%d(from %d to %d)", filenameString, lineNumber, start, end);
+        ALOGE("MiniGUIV8.ERR", "%s", sourceline_str);
+        ALOGE("MiniGUIV8.ERR", "%s:%d(from %d to %d)", filenameString, lineNumber, start, end);
 
         v8::Local<v8::Value> stack_trace_string;
         if (tryCatch->StackTrace(isolate->GetCurrentContext()).ToLocal(&stack_trace_string)
                 && stack_trace_string->IsString()) {
             v8::String::Utf8Value stack_trace(v8::Local<v8::String>::Cast(stack_trace_string));
-            ALOGE("WSSERVER.ERR", "%s", *stack_trace);
+            ALOGE("MiniGUIV8.ERR", "%s", *stack_trace);
         }
     }
 }
 
 static void init_wnd_tmpl(NCS_WND_TEMPLATE* pwnd_tmpl, Isolate *isolate, Local<Object> wnd_tmpl_obj) {
-    memset(pwnd_tmpl, 0, sizeof(*pwnd_tmpl));
 
-    map<int, DWORD> props;
+    WndTemplateBuilder builder(pwnd_tmpl);
+
+    WidgetClassDefine* widgetClassDefine = NULL;
+
     EventHandlerManager * pevent_handler_mgr = NULL;
+
+    Local<Value> v8ClassName = wnd_tmpl_obj->Get(isolate->GetCurrentContext(), toV8String(isolate, "Class")).ToLocalChecked();
+    if (!v8ClassName.IsEmpty() && v8ClassName->IsString()) {
+        pwnd_tmpl->class_name = TypeValue<const char*>::From(isolate, v8ClassName);
+    }
+
+    if (pwnd_tmpl->class_name) {
+        widgetClassDefine = WidgetClassDefine::getClassDefine(pwnd_tmpl->class_name);
+    }
+
+    if (widgetClassDefine) {
+        widgetClassDefine->initWndTemplateByDefaults(&builder);
+    }
 
     Local<Array> prop_names = wnd_tmpl_obj->GetOwnPropertyNames(isolate->GetCurrentContext()).ToLocalChecked();
     for (int i = 0; i < prop_names->Length(); i++) {
         Local<Value> key = prop_names->Get(isolate->GetCurrentContext(), i).ToLocalChecked();
         Local<Value> value = wnd_tmpl_obj->Get(isolate->GetCurrentContext(), key).ToLocalChecked();
-        const char* str_key = toString(isolate, key);
-        if (str_key == NULL) {
+        string str_key = toString(isolate, key);
+        if (str_key.empty()) {
             continue; //TODO error
         }
 
-        if (strcmp(str_key, "children") == 0
+
+        if (str_key == "children"
                 && value->IsArray()) {
             Local<Array> children = Local<Array>::Cast(value);
             int count = children->Length();
             NCS_WND_TEMPLATE * ctrls = new NCS_WND_TEMPLATE[count];
+            memset(ctrls, 0, sizeof(NCS_WND_TEMPLATE)*count);
             for (int chl = 0; chl < count; chl ++) {
                 Local<Value> ctrl_tmpl_obj = children->Get(isolate->GetCurrentContext(), chl).ToLocalChecked();
                 init_wnd_tmpl(&ctrls[chl], isolate, Local<Object>::Cast(ctrl_tmpl_obj));
             }
             pwnd_tmpl->ctrls = ctrls;
             pwnd_tmpl->count = count;
-        } else if(strncmp(str_key, "on", 2) == 0
+        } else if(strncmp(str_key.c_str(), "on", 2) == 0
                 && value->IsFunction()) {
-            int message = GetEventIdByName(str_key);
+            int message = GetEventIdByName(str_key.c_str());
             if (pevent_handler_mgr == NULL) {
                 pevent_handler_mgr = new EventHandlerManager(isolate);
             }
             pevent_handler_mgr->addEventHanler(message, isolate, Local<Function>::Cast(value));
+        } else if (str_key == "Class") {
+            continue; //class is replaced
         } else {
-            Property * prop = Property::getProperty(str_key);
+            Property * prop = Property::getProperty(str_key.c_str());
+            if (prop == NULL) {
+                ALOGE("MiniGUI V8", "Unsport property:%s", str_key.c_str());
+                continue;
+            }
             DWORD dwVal = toPropValue(isolate, prop->type, value);
             int id = prop->id;
-            if (id < 1000) {
-                props[id] = dwVal;
-            } else if(id < 2000) {
-                switch(id) {
-                case 1000: //className
-                    pwnd_tmpl->class_name = (const char*)dwVal;
-                    break;
-                case 1001: //x
-                    pwnd_tmpl->x = (int)dwVal;
-                    break;
-                case 1002: //y
-                    pwnd_tmpl->y = (int)dwVal;
-                    break;
-                case 1003: //width
-                    pwnd_tmpl->w = (int)dwVal;
-                    break;
-                case 1004: //height
-                    pwnd_tmpl->h = (int)dwVal;
-                    break;
-                case 1005: //Text
-                    //TODO Set Window Text
-                    pwnd_tmpl->caption = (const char*)dwVal;
-                    break;
-                case 1006: //Renderer
-                    //TODO Set Renderer
-                    break;
-                case 1007: //BgColor
-                    pwnd_tmpl->bk_color = dwVal;
-                    break;
-                case 1008: //font name
-                    pwnd_tmpl->font_name = (const char*)dwVal;
-                    break;
-                }
-            } else if (id < 3000) {
-                //style
-                pwnd_tmpl->style |= dwVal;
-            } else if (id < 4000) {
-                //ex style
-                pwnd_tmpl->ex_style |= dwVal;
-            } else {
-                //TODO invalidate prop value
-            }
+            builder.setProp(prop->id, dwVal);
         }
     }
 
-    if (props.size() > 0) {
-        int count = props.size();
-        NCS_PROP_ENTRY *ps = new NCS_PROP_ENTRY[count + 1];
-        int i = 0;
-        for (map<int, DWORD>::iterator it = props.begin();
-                it != props.end(); ++it) {
-            ps[i].id = it->first;
-            ps[i].value = it->second;
-            i ++;
-        }
-        ps[i].id = 0;
-        ps[i].value = 0;
-        pwnd_tmpl->props = ps;
-    }
+    builder.build();
 
     if (pevent_handler_mgr) {
         pwnd_tmpl->handlers = pevent_handler_mgr->createHandlers();
@@ -607,7 +642,7 @@ static Local<Object> wrap_widget_object(Isolate* isolate, mWidget* widget) {
 
 static void mg_createMainWindow(const FunctionCallbackInfo<Value>& args) {
     Isolate* isolate = args.GetIsolate();
-    if (args.Length() != 0) {
+    if (args.Length() == 0) {
         isolate->ThrowException(
                 toV8String(isolate, "Bad parameters of createMainWindow"));
         return ;
@@ -619,27 +654,45 @@ static void mg_createMainWindow(const FunctionCallbackInfo<Value>& args) {
         return ;
     }
 
+    ThreadLocalHolder localHolder;
+
     NCS_MNWND_TEMPLATE wnd_tmpl;
 
     HWND host = HWND_DESKTOP;
+
+    memset(&wnd_tmpl, 0, sizeof(wnd_tmpl));
+    wnd_tmpl.class_name = "MainWnd";
+
+    init_wnd_tmpl((NCS_WND_TEMPLATE*)&wnd_tmpl, isolate, wnd_tmpl_obj);
+
+    dumpWndTemplate(&wnd_tmpl);
 
     mWidget* widget = ncsCreateMainWindowIndirect(&wnd_tmpl, host);
 
     Local<Object> widget_obj = wrap_widget_object(isolate, widget);
 
     args.GetReturnValue().Set(widget_obj);
-
 }
 
 
-static bool init_global_objects(Isolate *isolate, Local<Context> & context) {
+static bool init_global_objects(Isolate *isolate, Local<Context> context) {
     HandleScope handle_scope(isolate);
+    TryCatch try_catch(isolate);
 
-    Local<Object> mgobj = Object::New(isolate);
+    Local<ObjectTemplate> tmpl = ObjectTemplate::New(isolate);
 
-    mgobj->Set(context, toV8String(isolate, "createMainWindow"), Function::New(context, mg_createMainWindow).ToLocalChecked());
+    tmpl->Set(toV8String(isolate, "createMainWindow"), FunctionTemplate::New(isolate, mg_createMainWindow));
 
-    context->Global()->Set(context, toV8String(isolate, "mg"), mgobj);
+    //Context::Scope context_scope(context);
+
+    Local<Object> mgobj = tmpl->NewInstance(context).ToLocalChecked();
+
+
+    if (!context->Global()->Set(context, toV8String(isolate, "mg"), mgobj).FromMaybe(false)) {
+        dumpV8Exception(isolate, &try_catch);
+        return false;
+    }
+    return true;
 }
 
 class ShellArrayBufferAllocator : public ArrayBuffer::Allocator {
@@ -660,6 +713,7 @@ static ShellArrayBufferAllocator array_buffer_allocator;
 
 static void Print(const FunctionCallbackInfo<v8::Value>& args) {
     HandleScope handle_scope(args.GetIsolate());
+    ThreadLocalHolder localHolder;
 
     int len = args.Length();
     if (len <= 0) {
@@ -676,7 +730,6 @@ static bool init_v8() {
     if (sIsolate != NULL)
         return true;
 
-
     V8::InitializeICU();
     Platform* platform = v8::platform::CreateDefaultPlatform();
     V8::InitializePlatform(platform);
@@ -687,12 +740,13 @@ static bool init_v8() {
     sIsolate = v8::Isolate::New(create_params);
 
     Isolate::Scope isolate_scope(sIsolate);
+    HandleScope handle_scope(sIsolate);
     //create context
     Local<ObjectTemplate> global = ObjectTemplate::New(sIsolate);
-    Local<Context> context = Context::New(sIsolate, NULL, global);
 
     global->Set(toV8String(sIsolate, "print"), FunctionTemplate::New(sIsolate, Print));
 
+    Local<Context> context = Context::New(sIsolate, NULL, global);
     init_global_objects(sIsolate, context);
     sContext.Reset(sIsolate, context);
     return true;
@@ -707,16 +761,27 @@ extern "C" unsigned long RunV8Script(const char* script_source, const char* file
     }
 
     Isolate* isolate = sIsolate;
+    string wrap_source = "(function(){";
+
+    wrap_source += script_source;
+    wrap_source += "})();";
+
+    Isolate::Scope isolate_scope(isolate);
+    HandleScope handle_scope (isolate);
+
+
+    Local<Context> context = Local<Context>::New(isolate, sContext);
+    Context::Scope context_scope(context);
 
     Local<String> v8_file_name = toV8String(isolate, filename);
 
-    Local<String> v8_source = toV8String(isolate, script_source);
+    Local<String> v8_source = toV8String(isolate, wrap_source.c_str());
 
-    HandleScope handle_scope (isolate);
     TryCatch try_catch(isolate);
     ScriptOrigin origin(v8_file_name);
-    Local<Context> context(isolate->GetCurrentContext());
     Local<Script> script;
+
+
 
     if (!Script::Compile(context, v8_source, &origin).ToLocal(&script)) {
 
@@ -731,8 +796,18 @@ extern "C" unsigned long RunV8Script(const char* script_source, const char* file
         return 0;
     }
 
-    return TypeValue<unsigned long>::From(isolate, result);
+    if (!result->IsObject()) {
+        ALOGE("MiniGUI V8", "Cannot get the result of object:%s", filename);
+        return 0;
+    }
 
+    mWidget *widget = getWrapWidget(result->ToObject(context).ToLocalChecked());
+
+    if (widget == NULL) {
+        ALOGE("MiniGUI V8", "Cannot get the widget wrap object:%s", filename);
+        return 0;
+    }
+
+    return (unsigned long)(widget->hwnd);
 }
-
 

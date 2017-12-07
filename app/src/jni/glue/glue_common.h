@@ -17,6 +17,8 @@ using std::vector;
 using std::string;
 using std::map;
 
+class WndTemplateBuilder;
+
 namespace glue {
 
 class PropType {
@@ -27,7 +29,7 @@ public:
     virtual int getType() = 0;
 
     virtual DWORD from(const char* str) { return (DWORD)str; }
-    virtual DWORD from(int val) { return (DWORD)val; }
+    virtual DWORD from(long val) { return (DWORD)val; }
 
     enum {
         INT,
@@ -89,6 +91,87 @@ typedef TPropType<PropType::TEXT> TextType;
 typedef TPropType<PropType::IMAGE> ImageType;
 typedef TPropType<PropType::FONT> FontType;
 
+class Property;
+
+struct PropValue {
+    union {
+        char *strVal;
+        long iVal;
+    }v;
+
+    Property * prop;
+
+    PropValue() {
+        prop = NULL;
+        v.iVal = 0;
+    }
+    PropValue(Property * p) {
+        prop = p;
+        v.iVal = 0;
+    }
+
+    PropValue(Property* p, long val) {
+        setValue(p, val);
+    }
+    void setValue(Property* p, long val) {
+        prop = p;
+        v.iVal = val;
+    }
+
+    PropValue(Property* p, const char* strval) {
+        setValue(p, strval);
+    }
+
+    void setValue(Property* p, const char* strval) {
+        prop = p;
+        v.strVal = strval ? strdup(strval) : NULL;
+    }
+
+    ~PropValue() {
+        int vt = getValueType();
+        if (vt == STR_VAL && v.strVal != NULL) {
+            free(v.strVal);
+        }
+    }
+
+    DWORD to() {
+        PropType* type = getPropType();
+        if (type == NULL) {
+            return 0;
+        }
+
+        int vt = getValueType();
+        if (vt == STR_VAL) {
+            return type->from(v.strVal);
+        }
+        return type->from(v.iVal);
+    }
+
+private:
+    enum {
+        INT_VAL,
+        STR_VAL
+    };
+
+    int getValueType() {
+        PropType *type = getPropType();
+        if (type == NULL) return INT_VAL;
+
+        switch(type->getType()) {
+        case PropType::STRING:
+        case PropType::TEXT:
+        case PropType::IMAGE:
+        case PropType::FONT:
+        case PropType::ENUM:
+            return STR_VAL;
+        }
+        return INT_VAL;
+    }
+
+    PropType* getPropType();
+};
+
+
 struct Property {
     enum {
         READ = 1,
@@ -99,26 +182,44 @@ struct Property {
     PropType *type;
     int id;
     int access;
-    //PropValue *defValue;
+    PropValue* pDefValue;
 
     bool readable() { (access & READ) == READ; }
     bool writeable() { (access & WRITE) == WRITE; }
 
-    Property(const char* name, PropType *type, int id, int access) {
+    Property(const char* name, PropType *type, int id, int access, PropValue* pdefVal = NULL) {
         this->name = name;
         this->type = type;
         this->id = id;
         this->access = access;
+        pDefValue = pdefVal;
+        if (pDefValue) {
+            pDefValue->prop = this;
+        }
     }
+
+    template<typename T>
+    void setDefValue(const T& val) {
+        if (pDefValue == NULL) {
+            pDefValue = new PropValue();
+        }
+        pDefValue->setValue(this, val);
+    }
+
+    bool hasDefValue() const { return pDefValue != NULL; }
+    DWORD getDefValue() { return hasDefValue() ? pDefValue->to() : 0; }
 
     static Property* getProperty(const char* name);
 };
 
+
 class WidgetClassDefine {
 
+    WidgetClassDefine * parent;
     mWidgetClass * ownerClass;
     string className;
-    vector<Property*> properties;
+    map<string, Property*> properties;
+    map<string, PropValue*> defValues;
 
     void * glueObject;
 
@@ -127,8 +228,11 @@ public:
         className = name;
         this->ownerClass = ownerClass;
         glueObject = NULL;
+        parent = getClassDefine((mWidgetClass*)(ownerClass->super));
+        addClassDefine(this);
     }
     ~WidgetClassDefine() {
+        //TODO
     }
 
     mWidgetClass * getOwnerClass() { return ownerClass; }
@@ -137,15 +241,47 @@ public:
         return className.c_str();
     }
     WidgetClassDefine * getParent() {
-        return NULL;
+        return parent;
     }
 
-    vector<Property*>& getProperties() {
+    map<string, Property*>& getProperties() {
         return properties;
     }
 
     void addProperty(Property* prop) {
-        properties.push_back(prop);
+        properties[prop->name] = prop;
+    }
+
+    Property* getProperty(const char* name) {
+        map<string, Property*>::iterator it = properties.find(name);
+        if ( it == properties.end()) {
+            if (getParent()) {
+                return getParent()->getProperty(name);
+            }
+            return NULL;
+        }
+        return it->second;
+    }
+
+    template<typename T>
+    void setDefPropValue(const char* name, const T& val) {
+        Property * prop = getProperty(name);
+        if (prop == NULL) {
+            //TODO Error
+            return ;
+        }
+        defValues[name] = new PropValue(prop, val);
+    }
+
+    void setDefPropValue(const char* name, PropValue * pdefVal) {
+        Property * prop = getProperty(name);
+        if (prop == NULL) {
+            //TODO Error
+            return ;
+        }
+
+        pdefVal->prop = prop;
+        defValues[name] = pdefVal;
     }
 
     template<typename T>
@@ -158,12 +294,16 @@ public:
         glueObject = (void*)obj;
     }
 
+    void initWndTemplateByDefaults(WndTemplateBuilder* pbuilder);
+
     static WidgetClassDefine * getClassDefine(mWidgetClass* ownerClass);
+    static WidgetClassDefine * getClassDefine(const char* name);
 
 private:
     static void addClassDefine(WidgetClassDefine* define);
 
-    static map<mWidgetClass*, WidgetClassDefine*> widgetMaps;
+    static map<mWidgetClass*, WidgetClassDefine*>* sWidgetMaps;
+    static map<string, WidgetClassDefine*>* sNamedWidgetMaps;
 };
 
 enum {

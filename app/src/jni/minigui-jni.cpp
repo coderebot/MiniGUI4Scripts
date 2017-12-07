@@ -90,6 +90,7 @@ unsigned long RunScript(const char* filename) {
         }
         fseek(fp, 0, SEEK_END);
         size_t len = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
         source = new char[len+1];
         fread(source, 1, len, fp);
         source[len] = 0;
@@ -119,8 +120,14 @@ static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jobj
         return 0;
     }
 
-    //return (jlong)create_button_dialog();
-    return (jlong)RunScript("/data/test.js");
+    const char* test_script = "/data/test.js";
+
+    jlong ret = (jlong)RunScript(test_script);
+    if (ret == 0) {
+        ALOGE("MiniGUI", "Error run script:%s", test_script);
+        return (jlong)create_button_dialog();
+    }
+    return ret;
 }
 
 static jboolean jni_processMessage(JNIEnv* env, jclass, jlong hwnd) {
