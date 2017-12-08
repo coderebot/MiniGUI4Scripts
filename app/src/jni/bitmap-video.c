@@ -5,6 +5,7 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <pthread.h>
 
 #include <unistd.h>
 
@@ -24,6 +25,30 @@
 
 typedef int bool;
 
+typedef struct {
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} CondSignal;
+
+void init_cond_signal(CondSignal* pcs) {
+    pthread_mutex_init(&(pcs->mutex), NULL);
+    pthread_cond_init(&(pcs->cond), NULL);
+}
+
+void send_signal(CondSignal* pcs) {
+    pthread_mutex_lock(&(pcs->mutex));
+    pthread_cond_signal(&(pcs->cond));
+    pthread_mutex_unlock(&(pcs->mutex));
+}
+
+void wait_signal(CondSignal* pcs) {
+    pthread_mutex_lock(&(pcs->mutex));
+    pthread_cond_wait(&(pcs->cond), &(pcs->mutex));
+    pthread_mutex_unlock(&(pcs->mutex));
+}
+
+static CondSignal sUpdateRectSignal;
+
 struct GAL_PrivateVideoData {
     int w, h;
     int pitch;
@@ -37,10 +62,13 @@ static void set_gal_mode(int width, int height) {
     setenv(MODE, szMode, 1);
 }
 
+
 bool startMiniGUI(int width, int height) {
     set_gal_mode(width, height);
     //set ial engine
     setenv(IAL_ENGINE, ANDROID_ENGIN, 1);
+
+    init_cond_signal(&sUpdateRectSignal);
 
     return InitGUI(0, NULL) == 0;
 }
@@ -121,6 +149,7 @@ static void Bitmap_VideoQuit(GAL_VideoDevice * self) {
 }
 
 static void Bitmap_UpdateRects(GAL_VideoDevice* self, int numrects, GAL_Rect *rects) {
+    send_signal(&sUpdateRectSignal);
 }
 
 
@@ -181,6 +210,8 @@ void* get_surface_buffer(int *pwidth, int *pheight) {
     if (s_device == NULL){
         return NULL;
     }
+
+    wait_signal(&sUpdateRectSignal);
 
     struct GAL_PrivateVideoData * data = s_device->hidden;
     if (data != NULL) {
@@ -248,6 +279,7 @@ static int wait_event(int which, int maxfd, fd_set* in, fd_set *out, fd_set *exc
     fd_set rfds;
     int fd, e;
 
+    send_signal(&sUpdateRectSignal);
     if (!in) {
         in = &rfds;
         FD_ZERO(&rfds);

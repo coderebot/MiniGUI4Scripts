@@ -68,6 +68,26 @@ public:
 
         return it->second;
     }
+
+    string getNameByValue(DWORD style) {
+        DWORD dwMask = getMask();
+
+        for(map<string, int>::iterator it = valMaps.begin(); it != valMaps.end(); ++it) {
+            if (it->second == (dwMask & style)) {
+                return it->first;
+            }
+        }
+        return string();
+    }
+
+    DWORD getMask() {
+        DWORD dwMask = 0;
+        for(map<string, int>::iterator it = valMaps.begin(); it != valMaps.end(); ++it) {
+            dwMask |= it->second;
+        }
+        return dwMask;
+    }
+
 };
 
 template<const int Type>

@@ -36,6 +36,7 @@ public class ItemListActivity extends Activity {
         private Bitmap mBitmap;
         private Rect  mSrcRt;
         private Rect  mDstRt;
+        private boolean mIsMiniGUIRunning = false;
 
         public MyView(Context context) {
             super(context);
@@ -47,7 +48,6 @@ public class ItemListActivity extends Activity {
         public void surfaceChanged(SurfaceHolder holder, int format, int width,
                 int height) {
             // TODO Auto-generated method stub
-            
         }
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
@@ -58,7 +58,6 @@ public class ItemListActivity extends Activity {
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             // TODO Auto-generated method stub
-            
         }
         class MyThread implements Runnable
         {
@@ -69,13 +68,24 @@ public class ItemListActivity extends Activity {
             @Override
             public void run() {
                 long hwnd = startMiniGUI(mBitmap.getWidth(), mBitmap.getHeight(), null);
+                mIsMiniGUIRunning = true;
+
+                new Thread(new UpdateGALThread()).start();
 
                 // TODO Auto-generated method stub
-                while (processMessage(hwnd)) {
+                while (processMessage(hwnd)) { }
+                mIsMiniGUIRunning = false;
+            }
+        }
+
+        class UpdateGALThread implements Runnable {
+            @Override
+            public void run() {
+
+                while (mIsMiniGUIRunning) {
                     updateGAL(mBitmap);
                     Canvas canvas = holder.lockCanvas(null);//获取画布  
                     canvas.drawBitmap(mBitmap, mSrcRt, mDstRt, null);
-                     
                     holder.unlockCanvasAndPost(canvas);//解锁画布，提交画好的图像  
                     try {
                         Thread.sleep(1);
@@ -83,8 +93,8 @@ public class ItemListActivity extends Activity {
                     }
                 }
             }
-        
         }
+
 
         private void verifyBitmap() {
             if (mBitmap != null) {
@@ -121,7 +131,6 @@ public class ItemListActivity extends Activity {
             updateTouchEvent((int)x, (int)y, button);
             return true;
         }
-        
     }
 
     private static native long startMiniGUI(int width, int height, String[] args);
