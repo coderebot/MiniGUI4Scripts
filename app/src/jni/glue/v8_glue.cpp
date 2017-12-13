@@ -93,6 +93,22 @@ struct TypeValue<const char*> {
     }
 };
 
+template<>
+struct TypeValue<string> {
+    static string DefaultValue() { return string(""); }
+    static string From(Isolate* isolate, const Local<Value>& value) {
+        Local<String> val = value->ToString(isolate->GetCurrentContext()).ToLocalChecked();
+        if (val.IsEmpty()) {
+            return DefaultValue();
+        }
+        String::Utf8Value strval(val);
+        return string(*strval);
+    }
+    static Local<Value> To(Isolate* isolate, const string str) {
+        return toV8String(isolate, str);
+    }
+};
+
 template<typename T>
 static inline Local<Value> toV8Value(Isolate* isolate, T t) {
     return TypeValue<T>::To(isolate, t);
@@ -132,6 +148,14 @@ static Local<Value> fromPropValue(Isolate* isolate, PropType *prop_type, unsigne
     }
     return Local<Value>();
 }
+
+static mWidget* getWrapWidget(Local<Object> obj) {
+    Local<External> field = Local<External>::Cast(obj->GetInternalField(0));
+    void *ptr = field->Value();
+    return static_cast<mWidget*>(ptr);
+}
+
+#include "widget_method.cpp"
 
 static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
     int len = strlen(prefix);
@@ -460,12 +484,6 @@ static void addWidgetFunctionTemplate(Isolate* isolate, WidgetClassDefine* widge
         widget->setGlueObject(f);
     }
     f->Reset(isolate, func_tmpl);
-}
-
-static mWidget* getWrapWidget(Local<Object> obj) {
-    Local<External> field = Local<External>::Cast(obj->GetInternalField(0));
-    void *ptr = field->Value();
-    return static_cast<mWidget*>(ptr);
 }
 
 static Property* getWrapProperty(Local<Value> obj) {

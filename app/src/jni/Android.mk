@@ -15,7 +15,22 @@ include $(LOCAL_PATH)/mgncs/source.mk
 LOCAL_MULTILIB := "both"
 LOCAL_MODULE    := minigui
 
-glue_sources= glue/glue_common.cpp \
+GLUE_PATH:=$(LOCAL_PATH)/glue
+TOOL_PATH:=$(LOCAL_PATH)/tools
+gen_source_dummy:=$(GLUE_PATH)/dummy.cpp
+
+TOOLS:=$(TOOL_PATH)/genv8code.py $(TOOL_PATH)/parsewidgets.py
+
+WIDGETS_DEFINES:=$(wildcard $(GLUE_PATH)/widgets/*.xml) $(GLUE_PATH)/widgets/compund-type.def
+
+$(gen_source_dummy): $(TOOLS) $(GLUE_PATH)/widgets.json $(WIDGETS_DEFINES)
+	echo $(GLUE_PATH)
+	python $(TOOL_PATH)/genv8code.py $(GLUE_PATH)/widgets.json $(GLUE_PATH)/widget_methods_define.cpp
+	python $(TOOL_PATH)/parsewidgets.py $(GLUE_PATH)/widgets $(GLUE_PATH)/widget_classes_list.cpp
+	echo > $(gen_source_dummy)
+
+glue_sources= $(gen_source_dummy) \
+		   	  glue/glue_common.cpp \
 			  glue/v8_glue.cpp \
 			  glue/glue_utils.cpp
 
@@ -55,5 +70,6 @@ LOCAL_CFLAGS += -Wall -Wno-unused-function \
 LOCAL_STATIC_LIBRARIES := libpng_static libz_static libicuuc_static libicui18n_static libv8
 LOCAL_LDFLAGS = -llog -ljnigraphics -latomic
 
+$(warning $(gen_source_dummy))
 include $(BUILD_SHARED_LIBRARY)
 

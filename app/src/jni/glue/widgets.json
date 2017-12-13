@@ -1,0 +1,221 @@
+{
+"classes":[
+    {
+        "name": "Combobox",
+        "methods": [
+            {
+                "name":"addItem",
+                "paramters": [
+                    {"name":"item", "type":"string"}
+                ],
+                "return": "bool",
+                "implements":"ret = (bool)_c(self)->addItem(self, item.c_str(), 0);"
+            },
+            {
+                "name":"removeItem",
+                "paramters":[
+                    {"name":"index", "type":"int"}
+                ],
+                "return":"bool",
+                "implements":"ret = (bool)_c(self)->removeItem(self, index);"
+            },
+            {
+                "name":"setItem",
+                "paramters":[
+                    {"name":"index", "type":"int"},
+                    {"name":"item", "type":"string"}
+                ],
+                "return":"bool",
+                "implements":"ret = (bool)_c(self)->setItem(self, index, item.c_str());"
+            },
+            {
+                "name":"getItem",
+                "paramters":[
+                    {"name":"index", "type":"int", "default" : "0"}
+                ],
+                "return":"string",
+                "implements":"ret = string(_c(self)->getItem(self, index));"
+            }
+        ]
+    },
+    {
+        "name":"ProgressBar",
+        "methods": [
+            {
+                "name":"increase",
+                "paramters": [
+                    {"name":"delta", "type":"int", "default":"1"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->increase(self, delta);"
+            },
+            {
+                "name":"stepIncrease",
+                "paramters": [],
+                "return":"int",
+                "implements":"ret = _c(self)->stepIncrease(self);"
+            }
+        ]
+    },
+    {
+        "name":"ListView",
+        "methods": [
+            {
+                "name":"addColumn",
+                "paramters":[
+                    {"name": "index", "type":"int"},
+                    {"name": "width", "type":"int"},
+                    {"name": "text", "type":"string"}
+                 ],
+                "return":"bool",
+                "implements":"{NCS_LISTV_CLMINFO info; memset(&info, 0, sizeof(info)); info.index=index; info.width=width; info.text=(char*)text.c_str(); ret = (bool)_c(self)->addColumn(self, &info);}"
+            },
+            {
+                "name":"addItem",
+                "paramters": [
+                    {"name":"index", "type":"int"},
+                    {"name":"rowindex", "type":"int"},
+                    {"name":"parent", "type":"int", "default":"0"},
+                    {"name":"height", "type":"int"},
+                    {"name":"flags", "type":"int"}
+                ],
+                "return":"int",
+                "implements":"{NCS_LISTV_ITEMINFO info; memset(&info, 0, sizeof(info)); info.index=index;info.retPos=rowindex;info.parent=(HITEM)parent; info.flags=flags; ret = _c(self)->addItem(self, &info);}"
+            },
+            {
+                "name":"setHeadText",
+                "paramters":[
+                    {"name":"colindex", "type":"int"},
+                    {"name":"text", "type":"string"}
+                ],
+                "return":"bool",
+                "implements":"ret = (bool)(_c(self)->setHeadText(self, colindex, text.c_str()));"
+            },
+            {
+                "name":"getChildItem",
+                "paramters": [
+                    {"name":"parent", "type":"int"},
+                    {"name":"index", "type":"int"}
+                ],
+                "return":"int",
+                "implements":"ret = (int)(_c(self)->getChildItem(self, (HITEM)parent, index));"
+            },
+            {
+                "name":"getChildCount",
+                "paramters":[
+                    {"name":"item", "type":"int"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->getChildCount(self, (HITEM)item);"
+            }
+        ]
+    },
+    {
+        "name":"Edit",
+        "methods": [
+            {
+                "name":"setContent",
+                "paramters": [
+                    {"name":"text", "type":"string"},
+                    {"name":"start", "type":"int", "default":"0"},
+                    {"name":"len", "type":"int", "default":"-1"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->setContent(self, text.c_str(), start, len);"
+            },
+            {
+                "name":"replace",
+                "paramters":[
+                    {"name":"text", "type":"string"},
+                    {"name":"start", "type":"int", "default":"0"},
+                    {"name":"len", "type":"int", "default":"-1"},
+                    {"name":"replaceStart", "type":"int", "default":"0"},
+                    {"name":"replaceEnd", "type":"int", "default":"-1"}
+                ],
+                "return":"void",
+                "implements":"_c(self)->replaceText(self, text.c_str(), start, len, replaceStart, replaceEnd);"
+            },
+            {
+                "name":"insert",
+                "paramters":[
+                    {"name":"text", "type":"string"},
+                    {"name":"start", "type":"int", "default":"0"},
+                    {"name":"len", "type":"int", "default":"-1"},
+                    {"name":"insertStart", "type":"int", "default":"0"}
+                ],
+                "return":"void",
+                "implements":"_c(self)->insert(self, text.c_str(), start, len, insertStart);"
+            },
+            {
+                "name":"append",
+                "paramters":[
+                    {"name":"text", "type":"string"},
+                    {"name":"start", "type":"int", "default":"0"},
+                    {"name":"len", "type":"int", "default":"-1"}
+                ],
+                "return":"void",
+                "implements":"_c(self)->append(self, text.c_str(), start, len);"
+            },
+            {
+                "name":"setSel",
+                "paramters":[
+                    {"name":"start", "type":"int"},
+                    {"name":"end", "type":"int"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->setSel(self, start, end);"
+            },
+            {
+                "name":"getSelStart",
+                "paramters":[],
+                "return":"int",
+                "implements":"int end; _c(self)->getSel(self, &ret, &end);"
+            },
+            {
+                "name":"getSelEnd",
+                "paramters":[],
+                "return":"int",
+                "implements":"int start; _c(self)->getSel(self, &start, &ret);"
+            },
+            {
+                "name":"copy",
+                "paramters":[],
+                "return":"void",
+                "implements":"_c(self)->copy(self);"
+            },
+            {
+                "name":"cut",
+                "paramters":[],
+                "return":"void",
+                "implements":"_c(self)->cut(self);"
+            },
+            {
+                "name":"paste",
+                "paramters":[],
+                "return":"void",
+                "implements":"_c(self)->paste(self);"
+            },
+            {
+                "name":"redo",
+                "paramters":[],
+                "return":"void",
+                "implements":"_c(self)->redo(self);"
+            },
+            {
+                "name":"undeo",
+                "paramters":[],
+                "return":"void",
+                "implements":"_c(self)->undo(self);"
+            }
+        ]
+    }
+],
+
+"consts":
+[
+    "NCSF_ITEM_NORMAL",
+    "NCSF_ITEM_SELECTED",
+    "NCSF_ITEM_DISABLED",
+    "NCSF_LSTITM_FOLD"
+]
+}
