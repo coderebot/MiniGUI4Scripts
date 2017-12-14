@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <string>
 #include <android/bitmap.h>
 #include "common.h"
 #include "minigui.h"
@@ -15,6 +16,8 @@
 #include "glue/glue_common.h"
 #include "miui-base.h"
 
+using std::string;
+
 JavaVM * g_jvm = NULL;
 
 extern "C" GHANDLE __mgncs_get_mgetc (void);
@@ -24,6 +27,13 @@ extern "C" GHANDLE __mgncs_get_mgetc (void);
 extern "C" void* get_surface_buffer(int *pw, int *ph);
 extern "C" int startMiniGUI(int, int);
 static int ial_fd_write;
+
+static string toString(JNIEnv* env, jstring jstr) {
+    const char* chars = env->GetStringUTFChars(jstr, NULL);
+    string str (chars ? chars : "");
+    env->ReleaseStringUTFChars(jstr, chars);
+    return str;
+}
 
 static void render_updateBitmap(JNIEnv* env, jclass, jobject bitmap) {
     AndroidBitmapInfo bmpInfo;
@@ -71,6 +81,7 @@ static bool start_with(const char* s, const char* start) {
     return (strncmp(s, start, len) == 0);
 }
 
+#if 0
 unsigned long RunScript(const char* filename) {
     if (filename == NULL) {
         ALOGE("MiniGUI", "Invalidate Script Filename NULL");
@@ -106,9 +117,10 @@ unsigned long RunScript(const char* filename) {
     }
 
 }
+#endif
 
 #include "test-button.c"
-static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jobject strarry) {
+static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jstring script_file, jstring script_source) {
     if(!startMiniGUI(width, height)) {
         ALOGE("MiniGUI", "start minigui failed");
     }
@@ -120,11 +132,17 @@ static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jobj
         return 0;
     }
 
-    const char* test_script = "/data/test.js";
+    //const char* test_script = "/data/test.js";
 
-    jlong ret = (jlong)RunScript(test_script);
+    //jlong ret = (jlong)RunScript(test_script);
+
+    string str_script = toString(env, script_file);
+    string str_source = toString(env, script_source);
+
+    jlong ret = (jlong)glue::RunScript(str_source.c_str(), str_script.c_str());
+
     if (ret == 0) {
-        ALOGE("MiniGUI", "Error run script:%s", test_script);
+        ALOGE("MiniGUI", "Error run script:%s", str_script.c_str());
         return (jlong)create_button_dialog();
     }
     return ret;
@@ -156,7 +174,7 @@ static void jni_updateTouchEvent(JNIEnv* env, jclass, jint x, jint y, jint butto
 
 
 static JNINativeMethod _render_methods[] {
-    {"startMiniGUI", "(II[Ljava/lang/String;)J",
+    {"startMiniGUI", "(IILjava/lang/String;Ljava/lang/String;)J",
         (void*)(jni_startMiniGUI)},
     {"updateGAL", "(Landroid/graphics/Bitmap;)V",
         (void*)(render_updateBitmap)},

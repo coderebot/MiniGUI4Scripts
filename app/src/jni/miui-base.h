@@ -23,7 +23,7 @@
 #ifdef __cplusplus
 extern "C"
 #else
-extern 
+extern
 #endif
 int android_fprintf(FILE* fd, const char* fmt, ...);
 

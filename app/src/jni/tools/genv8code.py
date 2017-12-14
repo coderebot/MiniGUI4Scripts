@@ -1,5 +1,6 @@
 import os,sys
 import json
+import re
 
 #usage genv8code path out_file.cpp
 
@@ -30,14 +31,63 @@ BEGIN_IMPLEMENT_CLASS_METHOD(%(classname)s, %(methodname)s)
 END_IMPLEMENT_CLASS_METHOD
 '''
 METHOD_PARAMTER_TMPL='''
-    DECLARE_PARAMTER(%(type)s, %(index)s, %(name)s, %(default)s) 
+    DECLARE_PARAMTER(%(type)s, %(index)s, %(name)s, %(default)s)
 '''
 
+def find_quote(s, pos):
+    while True:
+        idx = s.find('"', pos)
+        if idx < 0:
+            return -1;
+        elif idx > 0:
+                i = idx - 1
+                while i > 0 and s[i] == '\\':
+                    i = i - 1
+                if (idx - i) % 2 == 1:
+                    return idx
+        else:
+            return idx
+        pos = idx + 1
+    return -1
+
+
+def get_quote_count(s):
+    pos = 0
+    count = 0
+    while pos < len(s):
+        pos = find_quote(s, pos)
+        if pos < 0:
+            break
+        pos = pos + 1
+        count = count + 1
+    return count
+
+
+def read_and_trans(file_name):
+    f = open(file_name, "rt")
+    s = ''
+    tp = 0
+    while True:
+        line = f.readline()
+        if not line: break
+        if tp == 0:
+            count = get_quote_count(line)
+            if count > 0 and count % 2 == 1:
+                tp = 1
+        elif tp == 1:
+            if find_quote(line, 0) > 0:
+                tp = 0
+
+        if tp == 1:
+            s = s + line[:-1] + '\\n'
+        else:
+            s = s + line
+
+    f.close()
+    return s
 
 def read_json(json_file):
-    f = open(json_file, "rt")
-    s = f.read()
-    f.close()
+    s = read_and_trans(json_file)
     return json.loads(s)
 
 def genConst(const):
@@ -81,6 +131,8 @@ type_default_maps = {
     'double': '0.0',
     'string':'""',
     'long':'0',
+    'bool':'false',
+    'object':'(ObjectWrap*)NULL'
 }
 
 def getTypeDefault(type_str):
@@ -92,7 +144,7 @@ def genMethodParamters(paramters):
     paramter_str = ''
     for p in paramters:
         args = { }
-        args['type'] = p['type']
+        args['type'] = p['type'] == 'object' and 'ObjectWrap' or p['type']
         args['name'] = p['name']
         args['index'] = str(index)
         index = index + 1
@@ -116,7 +168,7 @@ def genMethodImplement(method, classname):
     if 'return' in method and method['return'] != 'void':
         args['return_define'] = genMethodReturn(method['return'])
         args['set_return'] = genMethodSetReturn(method['return'])
-    args['implements'] = method['implements'] 
+    args['implements'] = method['implements']
     return IMPLEMENT_CLASS_METHOD_TMPLS % args
 
 

@@ -35,6 +35,12 @@
                 ],
                 "return":"string",
                 "implements":"ret = string(_c(self)->getItem(self, index));"
+            },
+            {
+                "name":"getCurSel",
+                "paramters":[],
+                "return":"int",
+                "implements":"ret = (int)(_c(self)->getProperty(self, NCSP_COMB_SELECT));"
             }
         ]
     },
@@ -68,19 +74,65 @@
                     {"name": "text", "type":"string"}
                  ],
                 "return":"bool",
-                "implements":"{NCS_LISTV_CLMINFO info; memset(&info, 0, sizeof(info)); info.index=index; info.width=width; info.text=(char*)text.c_str(); ret = (bool)_c(self)->addColumn(self, &info);}"
+                "implements":"{
+        NCS_LISTV_CLMINFO info;
+        memset(&info, 0, sizeof(info));
+        info.index=index;
+        info.width=width;
+        info.text=(char*)text.c_str();
+        ret = (bool)_c(self)->addColumn(self, &info);
+    }"
+            },
+            {
+                "name":"delColumn",
+                "paramters":[
+                    {"name":"index", "type":"int"}
+                ],
+                "return":"bool",
+                "implements":"ret = (bool)_c(self)->delColumn(self, index);"
+            },
+            {
+                "name":"getColumnCount",
+                "paramters":[],
+                "return":"int",
+                "implements":"ret = _c(self)->getColumnCount(self);"
             },
             {
                 "name":"addItem",
                 "paramters": [
                     {"name":"index", "type":"int"},
-                    {"name":"rowindex", "type":"int"},
+                    {"name":"retPos", "type":"int"},
                     {"name":"parent", "type":"int", "default":"0"},
                     {"name":"height", "type":"int"},
-                    {"name":"flags", "type":"int"}
+                    {"name":"flags", "type":"int"},
+                    {"name":"texts", "type":"object"}
                 ],
                 "return":"int",
-                "implements":"{NCS_LISTV_ITEMINFO info; memset(&info, 0, sizeof(info)); info.index=index;info.retPos=rowindex;info.parent=(HITEM)parent; info.flags=flags; ret = _c(self)->addItem(self, &info);}"
+                "implements":"{
+        NCS_LISTV_ITEMINFO info;
+        NCS_LISTV_ITEMDATA *psubdata = NULL;
+        memset(&info, 0, sizeof(info));
+        info.index=index;
+        info.parent=(HITEM)parent;
+        info.retPos = retPos;
+        vector<string> subitem_texts = texts.toArray<string>();
+        if (subitem_texts.size() > 0) {
+            psubdata = new NCS_LISTV_ITEMDATA[subitem_texts.size()];
+            memset(psubdata, 0, sizeof(*psubdata)*subitem_texts.size());
+            for (int i = 0; i < subitem_texts.size(); i++) {
+                psubdata[i].row = index;
+                psubdata[i].col = i;
+                psubdata[i].text = (char*)subitem_texts[i].c_str();
+            }
+            info.dataSize = subitem_texts.size();
+            info.data = psubdata;
+        }
+        info.flags=flags;
+        ret = _c(self)->addItem(self, &info);
+        if (psubdata) {
+           delete[] psubdata;
+        }
+    }"
             },
             {
                 "name":"setHeadText",
@@ -107,6 +159,25 @@
                 ],
                 "return":"int",
                 "implements":"ret = _c(self)->getChildCount(self, (HITEM)item);"
+            },
+            {
+                "name":"getItemText",
+                "paramters":[
+                    {"name":"row", "type":"int"},
+                    {"name":"col", "type":"int"}
+                ],
+                "return":"string",
+                "implements":"{
+        NCS_LISTV_ITEMDATA ii;
+        memset(&ii, 0, sizeof(ii));
+        ii.row=row;
+        ii.col=col;
+        if(_c(self)->getItemInfo(self,&ii)){
+            ret=ii.text;
+        } else {
+            ret=\"\";
+        }
+    }"
             }
         ]
     },
@@ -206,6 +277,72 @@
                 "paramters":[],
                 "return":"void",
                 "implements":"_c(self)->undo(self);"
+            }
+        ]
+    },
+    {
+        "name": "ItemView",
+        "methods":[
+            {
+                "name":"getCurSel",
+                "paramters":[],
+                "return":"int",
+                "implements":"ret = _c(self)->getCurSel(self);"
+            },
+            {
+                "name":"setCurSel",
+                "paramters":[
+                    {"name":"sel", "type":"int"}
+                ],
+                "return":"void",
+                "implements": "_c(self)->setCurSel(self, sel);"
+            },
+            {
+                "name":"removeAll",
+                "paramters":[],
+                "return":"bool",
+                "implements":"_c(self)->removeAll(self);"
+            }
+        ]
+    },
+    {
+        "name": "ListBox",
+        "methods": [
+            {
+                "name":"setSel",
+                "paramters": [
+                    {"name": "newSel", "type":"int"},
+                    {"name": "flags", "type":"int", "default":"0"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->setSel(self, newSel, flags);"
+            },
+            {
+                "name":"addString",
+                "paramters":[
+                    {"name": "text", "type":"string"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->addString(self, text.c_str(), 0);"
+            },
+            {
+                "name":"insertString",
+                "paramters":[
+                    {"name": "text", "type":"string"},
+                    {"name": "index", "type":"int"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->insertString(self, text.c_str(), 0, index);"
+            },
+            {
+                "name":"findString",
+                "paramters":[
+                    {"name":"start", "type":"int"},
+                    {"name":"text", "type":"string"},
+                    {"name":"bExact", "type":"bool"}
+                ],
+                "return":"int",
+                "implements":"ret = _c(self)->findString(self, start, (char*)text.c_str(), bExact);"
             }
         ]
     }

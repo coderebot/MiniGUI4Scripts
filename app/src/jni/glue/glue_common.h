@@ -240,6 +240,7 @@ class WidgetClassDefine {
     string className;
     map<string, Property*> properties;
     map<string, PropValue*> defValues;
+    map<string, int> eventMap;
 
     void * glueObject;
 
@@ -270,6 +271,18 @@ public:
 
     void addProperty(Property* prop) {
         properties[prop->name] = prop;
+    }
+
+    void addEvent(const char* name, int id) {
+        eventMap[name] = id;
+    }
+
+    int getEvent(const char* name) {
+        map<string, int>::iterator it = eventMap.find(name);
+        if (it == eventMap.end()) {
+            return getParent() ? getParent()->getEvent(name) : 0;
+        }
+        return it->second;
     }
 
     Property* getProperty(const char* name) {

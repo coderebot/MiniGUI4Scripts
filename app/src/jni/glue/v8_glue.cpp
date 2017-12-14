@@ -22,6 +22,9 @@ template <typename R>
 struct TypeValue { };
 
 static Local<String> toV8String(Isolate* isolate, const char* str) {
+    if (str == NULL) {
+        return Local<String>();
+    }
     return v8::String::NewFromUtf8(isolate, str, NewStringType::kNormal).ToLocalChecked();
 }
 
@@ -141,8 +144,11 @@ static Local<Value> fromPropValue(Isolate* isolate, PropType *prop_type, unsigne
     case PropType::TEXT:
     case PropType::IMAGE:
     case PropType::FONT:
-    case PropType::ENUM:
         return TypeValue<const char*>::To(isolate, (const char*)dwVal);
+    case PropType::ENUM: {
+        string enum_value = ((EnumType*)prop_type)->getNameByValue((DWORD)dwVal);
+        return TypeValue<const char*>::To(isolate, enum_value.c_str());
+    }
     case PropType::COLOR:
         return TypeValue<unsigned int>::To(isolate, (DWORD)dwVal);
     }
@@ -153,6 +159,16 @@ static mWidget* getWrapWidget(Local<Object> obj) {
     Local<External> field = Local<External>::Cast(obj->GetInternalField(0));
     void *ptr = field->Value();
     return static_cast<mWidget*>(ptr);
+}
+
+static mWidget* getWidget(Isolate* isolate, Local<Value> value) {
+    if (value->IsNumber()) {
+        return (mWidget*)(TypeValue<unsigned long>::From(isolate, value));
+    } else if(value->IsObject()) {
+        return getWrapWidget(Local<Object>::Cast(value));
+    }
+
+    return NULL;
 }
 
 #include "widget_method.cpp"
@@ -187,7 +203,7 @@ static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
 
     if(tmpl->handlers) {
         for (int i = 0; tmpl->handlers[i].handler != NULL; i++) {
-            ALOGI("MiniGUIV8", "\t%sHandler message %d: handler:%p", prefix, tmpl->handlers[i].message, tmpl->handlers[i].handler);
+            ALOGI("MiniGUIV8", "\t%sHandler message 0x%08x: handler:%p", prefix, tmpl->handlers[i].message, tmpl->handlers[i].handler);
         }
     }
 
@@ -271,7 +287,7 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
     static BOOL do_onCreate(mWidget *self, DWORD dwAddData) {
         EventHandlerManager * m = get_event_handler_manager(self);
         if (m) {
-            m->call<void>((unsigned long)self, MSG_CREATE);
+            m->call<void>(MSG_CREATE, (unsigned long)self);
         }
         return TRUE;
     }
@@ -280,7 +296,7 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
     static void do_##name(mWidget* self) { \
         EventHandlerManager * m = get_event_handler_manager(self); \
         if (m) { \
-            m->call<void>((unsigned long)self, message); \
+            m->call<void>(message, (unsigned long)self); \
         } \
     }
 
@@ -309,10 +325,11 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
         return NCSR_CONTINUE_MSG;
     }
 
-    static void do_onNotify(mWidget* self, int id, int nc) {
+    static void do_onNotify(mWidget* self, int id, int nc, DWORD addData) {
         EventHandlerManager * m = get_event_handler_manager(self);
+        ALOGI("==DJJ", "onNotify nc=%d,id=%d,self=%s, m=%p", nc, id, _c(self)->typeName, m);
         if (m) {
-            m->call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id);
+            m->call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id, addData);
         }
     }
 
@@ -492,7 +509,7 @@ static Property* getWrapProperty(Local<Value> obj) {
 }
 
 static void widget_prop_get(Local<String> property, const PropertyCallbackInfo<Value>& info) {
-    mWidget *widget = getWrapWidget(info.Holder());
+    mWidget *widget = getWrapWidget(info.This());
     Property* prop = getWrapProperty(info.Data());
 
     DWORD dwVal = _c(widget)->getProperty(widget, prop->id);
@@ -504,7 +521,7 @@ static void widget_prop_get(Local<String> property, const PropertyCallbackInfo<V
 
 
 static void widget_prop_set(Local<String> property, Local<Value> value, const PropertyCallbackInfo<void>& info) {
-    mWidget *widget = getWrapWidget(info.Holder());
+    mWidget *widget = getWrapWidget(info.This());
     Property* prop = getWrapProperty(info.Data());
 
     ThreadLocalHolder localHolder();
@@ -534,24 +551,28 @@ static Local<FunctionTemplate> createWidgetClass(Isolate* isolate, WidgetClassDe
 
     func_tmpl->SetClassName(toV8String(isolate, widget->getClassName()));
 
-    Local<ObjectTemplate> prototype = func_tmpl->InstanceTemplate();//func_tmpl->PrototypeTemplate();
+    Local<ObjectTemplate> prototype = /*func_tmpl->InstanceTemplate();//*/func_tmpl->PrototypeTemplate();
+
+    init_widget_methods(isolate, widget->getOwnerClass(), prototype);
 
     if (widget->getParent()) {
         Local<FunctionTemplate> parent = getAndInstallWidgetFunctionTemplate(isolate, widget->getParent());
         func_tmpl->Inherit(parent);
     }
 
+    Local<ObjectTemplate> instance_tmpl = func_tmpl->InstanceTemplate();
     map<string,Property*> &props = widget->getProperties();
     for (map<string,Property*>::iterator it = props.begin(); it != props.end(); ++it) {
         Property* prop = it->second;
         Local<External> prop_data = External::New(isolate, prop);
-        prototype->SetAccessor(toV8String(isolate, prop->name),
+        ALOGE("MiniGUI V8", "set prop:%s.%s", widget->getClassName(), prop->name.c_str());
+        instance_tmpl->SetAccessor(toV8String(isolate, prop->name),
                 widget_prop_get,
                 widget_prop_set,
                 prop_data);
     }
 
-    Local<ObjectTemplate> instance_tmpl = func_tmpl->InstanceTemplate();
+
     instance_tmpl->SetInternalFieldCount(1);
 
     return func_tmpl;
@@ -615,12 +636,12 @@ static void init_wnd_tmpl(NCS_WND_TEMPLATE* pwnd_tmpl, Isolate *isolate, Local<O
     Local<Array> prop_names = wnd_tmpl_obj->GetOwnPropertyNames(isolate->GetCurrentContext()).ToLocalChecked();
     for (int i = 0; i < prop_names->Length(); i++) {
         Local<Value> key = prop_names->Get(isolate->GetCurrentContext(), i).ToLocalChecked();
-        Local<Value> value = wnd_tmpl_obj->Get(isolate->GetCurrentContext(), key).ToLocalChecked();
         string str_key = toString(isolate, key);
         if (str_key.empty()) {
             continue; //TODO error
         }
 
+        Local<Value> value = wnd_tmpl_obj->Get(isolate->GetCurrentContext(), key).ToLocalChecked();
 
         if (str_key == "children"
                 && value->IsArray()) {
@@ -634,9 +655,11 @@ static void init_wnd_tmpl(NCS_WND_TEMPLATE* pwnd_tmpl, Isolate *isolate, Local<O
             }
             pwnd_tmpl->ctrls = ctrls;
             pwnd_tmpl->count = count;
+        } else if (str_key == "id") {
+            pwnd_tmpl->id = TypeValue<int>::From(isolate, value);
         } else if(strncmp(str_key.c_str(), "on", 2) == 0
-                && value->IsFunction()) {
-            int message = GetEventIdByName(str_key.c_str());
+                && value->IsFunction() && widgetClassDefine) {
+            int message = widgetClassDefine->getEvent(str_key.c_str());
             if (pevent_handler_mgr == NULL) {
                 pevent_handler_mgr = new EventHandlerManager(isolate);
             }
@@ -660,6 +683,13 @@ static void init_wnd_tmpl(NCS_WND_TEMPLATE* pwnd_tmpl, Isolate *isolate, Local<O
     if (pevent_handler_mgr) {
         pevent_handler_mgr->apply((NCS_WND_TEMPLATE*)pwnd_tmpl);
     }
+}
+
+static void init_mainwnd_tmpl(NCS_MNWND_TEMPLATE *pmainwnd_tmpl, Isolate * isolate, Local<Object> tmpl) {
+    memset(pmainwnd_tmpl, 0, sizeof(NCS_MNWND_TEMPLATE));
+    pmainwnd_tmpl->class_name = "MainWnd";
+
+    init_wnd_tmpl((NCS_WND_TEMPLATE*)pmainwnd_tmpl, isolate, tmpl);
 }
 
 static Local<Object> wrap_widget_object(Isolate* isolate, mWidget* widget) {
@@ -709,10 +739,7 @@ static void mg_createMainWindow(const FunctionCallbackInfo<Value>& args) {
 
     HWND host = HWND_DESKTOP;
 
-    memset(&wnd_tmpl, 0, sizeof(wnd_tmpl));
-    wnd_tmpl.class_name = "MainWnd";
-
-    init_wnd_tmpl((NCS_WND_TEMPLATE*)&wnd_tmpl, isolate, wnd_tmpl_obj);
+    init_mainwnd_tmpl(&wnd_tmpl, isolate, wnd_tmpl_obj);
 
     dumpWndTemplate(&wnd_tmpl);
 
@@ -747,16 +774,6 @@ static void mg_wrapWidget(const FunctionCallbackInfo<Value>& args) {
     args.GetReturnValue().Set(widget_obj);
 }
 
-static mWidget* getWidget(Isolate* isolate, Local<Value> value) {
-    if (value->IsNumber()) {
-        return (mWidget*)(TypeValue<unsigned long>::From(isolate, value));
-    } else if(value->IsObject()) {
-        return getWrapWidget(Local<Object>::Cast(value));
-    }
-
-    return NULL;
-}
-
 static void mg_MessageBox(const FunctionCallbackInfo<Value>& args) {
     mWidget * parent = NULL;
     string text;
@@ -781,6 +798,77 @@ static void mg_MessageBox(const FunctionCallbackInfo<Value>& args) {
     MessageBox(parent ? parent->hwnd : HWND_DESKTOP, text.c_str(), caption.c_str(), style);
 }
 
+static void mg_DoModel(const FunctionCallbackInfo<Value>& args) {
+    mWidget * parent = NULL;
+    Isolate* isolate = args.GetIsolate();
+    if (args.Length() < 2) {
+        isolate->ThrowException(toV8String(isolate, "DoModel need 2 paramters"));
+        return ;
+    }
+    parent = getWidget(isolate, args[0]);
+    Local<Object> wnd_tmpl_obj = args[1]->ToObject();
+    if (wnd_tmpl_obj.IsEmpty()) {
+        isolate->ThrowException(toV8String(isolate, "DoModel recieve a un object paramters 1"));
+        return ;
+    }
+
+    ThreadLocalHolder localHolder;
+
+    HWND host = HWND_DESKTOP;
+    if (parent) {
+        host = parent->hwnd;
+    }
+
+    NCS_MNWND_TEMPLATE wnd_tmpl;
+
+    init_mainwnd_tmpl(&wnd_tmpl, isolate, wnd_tmpl_obj);
+
+    dumpWndTemplate(&wnd_tmpl);
+
+    mMainWnd * main_wnd = (mMainWnd*)ncsCreateMainWindowIndirect(&wnd_tmpl, host);
+
+    if (main_wnd) {
+        DWORD ret = _c(main_wnd)->doModal(main_wnd, TRUE);
+        args.GetReturnValue().Set(TypeValue<unsigned int>::To(isolate, ret));
+    }
+}
+
+static mWidget * find_window(HWND hwnd, int id) {
+    HWND hMainWnd = GetMainWindowHandle(hwnd);
+    mWidget* main_wnd = ncsObjFromHandle(hMainWnd);
+    if (main_wnd) {
+        return (mWidget*)(_c(main_wnd)->getChild(main_wnd, id));
+    }
+    return NULL;
+}
+
+static mWidget * find_window(const FunctionCallbackInfo<Value>& args) {
+    Isolate* isolate = args.GetIsolate();
+    if (args.Length() < 2) {
+        isolate->ThrowException(toV8String(isolate, "findWindow need 2 paramters"));
+        return NULL;
+    }
+
+    mWidget * parent = getWidget(isolate, args[0]);
+    int id = TypeValue<int>::From(isolate, args[1]);
+    if (parent == NULL) {
+        return NULL;
+    }
+    return find_window(parent->hwnd, id);
+}
+
+static void mg_findWnd(const FunctionCallbackInfo<Value>& args) {
+    mWidget * widget = find_window(args);
+    args.GetReturnValue().Set(TypeValue<unsigned long>::To(args.GetIsolate(), (unsigned long)widget));
+}
+
+static void mg_findWndObject(const FunctionCallbackInfo<Value>& args) {
+    mWidget * widget = find_window(args);
+    if (widget) {
+        args.GetReturnValue().Set(wrap_widget_object(args.GetIsolate(), widget));
+    }
+}
+
 
 #define ADD_CONSTANTEX(name, Type, value) \
     global->Set(context, toV8String(isolate, name), TypeValue<Type>::To(isolate, (Type)(value)))
@@ -803,6 +891,8 @@ static void init_constants(Isolate* isolate, Local<Context> context) {
     ADD_INT_CONST(MB_DEFBUTTON1);
     ADD_INT_CONST(MB_DEFBUTTON2);
     ADD_INT_CONST(MB_DEFBUTTON3);
+
+    init_global_const_values(isolate, context, global);
 }
 
 static bool init_global_objects(Isolate *isolate, Local<Context> context) {
@@ -811,9 +901,12 @@ static bool init_global_objects(Isolate *isolate, Local<Context> context) {
 
     Local<ObjectTemplate> tmpl = ObjectTemplate::New(isolate);
 
-    tmpl->Set(toV8String(isolate, "createMainWindow"), FunctionTemplate::New(isolate, mg_createMainWindow));
+    tmpl->Set(toV8String(isolate, "CreateMainWindow"), FunctionTemplate::New(isolate, mg_createMainWindow));
     tmpl->Set(toV8String(isolate, "wrap"), FunctionTemplate::New(isolate, mg_wrapWidget));
     tmpl->Set(toV8String(isolate, "MessageBox"), FunctionTemplate::New(isolate, mg_MessageBox));
+    tmpl->Set(toV8String(isolate, "DoModel"), FunctionTemplate::New(isolate, mg_DoModel));
+    tmpl->Set(toV8String(isolate, "findWnd"), FunctionTemplate::New(isolate, mg_findWnd));
+    tmpl->Set(toV8String(isolate, "findWndObject"), FunctionTemplate::New(isolate, mg_findWndObject));
 
     //Context::Scope context_scope(context);
 
@@ -874,8 +967,12 @@ static bool init_v8() {
     create_params.array_buffer_allocator = &array_buffer_allocator;
     sIsolate = v8::Isolate::New(create_params);
 
+
     Isolate::Scope isolate_scope(sIsolate);
     HandleScope handle_scope(sIsolate);
+
+    init_widget_classes_methods();
+
     //create context
     Local<ObjectTemplate> global = ObjectTemplate::New(sIsolate);
 
@@ -886,8 +983,6 @@ static bool init_v8() {
     sContext.Reset(sIsolate, context);
     return true;
 }
-
-
 
 extern "C" unsigned long RunV8Script(const char* script_source, const char* filename) {
     if (!init_v8()) {

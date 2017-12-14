@@ -30,7 +30,6 @@ static PropType* _base_types [] = {
 
 static map<string, EnumType*> *sNamedEnumTypes;
 static map<string, Property*> *sNamedProperties;
-static map<string, int> *sNamedEventIds;
 
 map<mWidgetClass*, WidgetClassDefine*>* WidgetClassDefine::sWidgetMaps;
 map<string, WidgetClassDefine*>* WidgetClassDefine::sNamedWidgetMaps;
@@ -159,15 +158,6 @@ void SetWidgetEventHandlers(mWidget* widget, void *pt) {
 }
 
 
-int GetEventIdByName(const char* name) {
-    map<string, int>::iterator it = sNamedEventIds->find(name);
-    if (it == sNamedEventIds->end()) {
-        return -1;
-    }
-    return it->second;
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 
 #include "widget_classes_list.cpp"
@@ -176,10 +166,8 @@ int GetEventIdByName(const char* name) {
 bool InitGlue() {
     sNamedEnumTypes = new map<string, EnumType*>;
     sNamedProperties = new map<string, Property*>;
-    sNamedEventIds = new map<string, int>;
     create_enum_types(*sNamedEnumTypes);
     create_all_props(*sNamedProperties);
-    init_event_ids(*sNamedEventIds);
     init_widget_class(sWidgetClasses);
     return true;
 }

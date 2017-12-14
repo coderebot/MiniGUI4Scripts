@@ -166,6 +166,7 @@ WidgetClassTemplate = '''\
     widgetClasses.push_back(pwidget);
     %(prop_defines)s
     %(default_values)s
+    %(event_defines)s
 }
 '''
 
@@ -191,16 +192,26 @@ PropTypeTemplate = '''
     enumMaps["%(name)s"] = EnumType::create("%(name)s", %(options_list)s NULL);
 '''
 
-EventFrameBase = '''
-static void init_event_ids(map<string, int>& eventMaps) {
-    %(event_defines)s
-}
-'''
 EventTemplate = '''
-    eventMaps["%(handler)s"] = %(code)s;
+    pwidget->addEvent("%(handler)s", %(code)s);
 '''
 
-widget_excluede = set(['TextEditor', 'PhoneBar', 'IMWordSel', 'MlEdit'])
+widget_excluede = set([
+    'TextEditor',
+    'PhoneBar',
+    'IMWordSel',
+    'MlEdit',
+    'VProgressBar',
+    'VSeparator',
+    'VTrackBar',
+    'VScrollBar',
+    'VSpinner',
+    'HProgressBar',
+    'HSeparator',
+    'HTrackBar',
+    'HScrollBar',
+    'HSpinner'
+])
 
 def getOptionList(enum):
     options = ''
@@ -244,7 +255,12 @@ def dump_sorted_widgets(sorted_widgets):
         print(w['class'])
 
 def gen_events(widget):
-    return ''
+    event_str = ''
+    for evt in widget['events']:
+        handler = getHandler(evt['handler'])
+        evt_code = evt['code']
+        event_str = event_str + gen_event(handler, evt_code)
+    return event_str
 
 def gen_prop_access(widget, prop):
     name = prop['name']
@@ -349,21 +365,6 @@ def getHandler(handler):
         return m.group(1)
     return handler
 
-
-def genAllEvents(widgets):
-    events = {}
-    event_strs = ''
-    for w in widgets:
-        for evt in w['events']:
-            handler = getHandler(evt['handler'])
-            evt_code = evt['code']
-            if handler in events:
-                continue
-            events[handler] = evt_code
-            event_strs = event_strs + gen_event(handler, evt_code)
-    return EventFrameBase % {'event_defines':event_strs}
-
-
 def gen_props(widget):
     props_str = ''
     for k, prop in widget['props'].items():
@@ -416,8 +417,6 @@ def genCodes(widget_dirs, out_file):
     sorted_widgets = sort_widgets(widgets)
     all_props = genAllProps(sorted_widgets)
     fout.write(all_props)
-    all_events = genAllEvents(sorted_widgets)
-    fout.write(all_events)
     #dump_sorted_widgets(sorted_widgets)
     widgets_code = genWidgets(sorted_widgets)
     fout.write(widgets_code)

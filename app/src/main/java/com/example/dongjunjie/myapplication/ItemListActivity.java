@@ -1,5 +1,8 @@
 package com.example.dongjunjie.myapplication;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -11,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
+import android.util.Log;
 
 public class ItemListActivity extends Activity {
     static {
@@ -67,7 +71,7 @@ public class ItemListActivity extends Activity {
              */
             @Override
             public void run() {
-                long hwnd = startMiniGUI(mBitmap.getWidth(), mBitmap.getHeight(), null);
+                long hwnd = startMiniGUI(mBitmap.getWidth(), mBitmap.getHeight());
                 mIsMiniGUIRunning = true;
 
                 new Thread(new UpdateGALThread()).start();
@@ -133,7 +137,50 @@ public class ItemListActivity extends Activity {
         }
     }
 
-    private static native long startMiniGUI(int width, int height, String[] args);
+    private static String readFile(String file_name) {
+        try {
+            File file = new File(file_name);
+            FileInputStream fs = new FileInputStream(file);
+            byte[] b = new byte[fs.available()];
+            fs.read(b);
+            return new String(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String readRaw(int id) {
+        try {
+            InputStream is = getResources().openRawResource(id);
+            byte[] buffer = new byte[is.available()];
+            is.read(buffer);
+            String result = new String(buffer);
+            is.close();
+            return result;
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    private long startMiniGUI(int width, int height) {
+        String file = "/data/test.js";
+        String source;
+        source = readFile(file);
+        if (source == null) {
+            file = "android://raw/test.js";
+            source = readRaw(R.raw.test);
+        }
+
+        if (source == null) {
+            Log.i("MiniGUI V8", "cannot open script file:"+file);
+            return 0;
+        }
+
+        return startMiniGUI(width, height, file, source);
+    }
+
+    private static native long startMiniGUI(int width, int height, String file, String source);
     private static native void updateGAL(Bitmap bmp);
     private static native boolean processMessage(long hwnd);
     private static native void updateTouchEvent(int x, int y, int button);

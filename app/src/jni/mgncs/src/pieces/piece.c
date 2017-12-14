@@ -83,7 +83,7 @@ BOOL init_pieces_classes()
 	InitPieceClass(mUpArrowPiece);
 	InitPieceClass(mDownArrowPiece);
 
-#ifdef _MGNCSCTRL_IMWORDSEL
+#if defined (_MGNCSCTRL_IMWORDSEL) || defined (_MGNCSCTRL_MONTHCALENDAR) || defined (_MGNCSCTRL_SPINBOX)
 	InitPieceClass(mArrowButtonPiece);
 #endif
 

@@ -135,48 +135,6 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 Property::RDWT,
                 new PropValue(NULL, "True"));
 
-    propMaps["LineStep"] = new Property(
-                "LineStep",
-                getPropType(PropType::INT),
-                10,
-                Property::RDWT,
-                new PropValue(NULL, (long)5));
-
-    propMaps["Direction"] = new Property(
-                "Direction",
-                getNamedEnumType("Direction"),
-                2005,
-                Property::RDWT,
-                NULL);
-
-    propMaps["MinPos"] = new Property(
-                "MinPos",
-                getPropType(PropType::INT),
-                8,
-                Property::RDWT,
-                new PropValue(NULL, (long)0));
-
-    propMaps["CurPos"] = new Property(
-                "CurPos",
-                getPropType(PropType::INT),
-                9,
-                Property::RDWT,
-                new PropValue(NULL, (long)0));
-
-    propMaps["AutoLoop"] = new Property(
-                "AutoLoop",
-                EnumType::create(NULL, "False",0x0,"True",0x4, NULL),
-                2006,
-                Property::RDWT,
-                NULL);
-
-    propMaps["MaxPos"] = new Property(
-                "MaxPos",
-                getPropType(PropType::INT),
-                7,
-                Property::RDWT,
-                new PropValue(NULL, (long)100));
-
     propMaps["VStepValue"] = new Property(
                 "VStepValue",
                 getPropType(PropType::INT),
@@ -296,33 +254,47 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 Property::RDWT,
                 new PropValue(NULL, (long)-1));
 
-    propMaps["PageStep"] = new Property(
-                "PageStep",
+    propMaps["LineStep"] = new Property(
+                "LineStep",
                 getPropType(PropType::INT),
-                11,
+                10,
                 Property::RDWT,
-                new PropValue(NULL, (long)3));
+                new PropValue(NULL, (long)5));
 
-    propMaps["Ruler"] = new Property(
-                "Ruler",
-                EnumType::create(NULL, "False",0x8,"True",0x0, NULL),
+    propMaps["Direction"] = new Property(
+                "Direction",
+                getNamedEnumType("Direction"),
+                2005,
+                Property::RDWT,
+                NULL);
+
+    propMaps["MinPos"] = new Property(
+                "MinPos",
+                getPropType(PropType::INT),
+                8,
+                Property::RDWT,
+                new PropValue(NULL, (long)0));
+
+    propMaps["CurPos"] = new Property(
+                "CurPos",
+                getPropType(PropType::INT),
+                9,
+                Property::RDWT,
+                new PropValue(NULL, (long)0));
+
+    propMaps["AutoLoop"] = new Property(
+                "AutoLoop",
+                EnumType::create(NULL, "False",0x0,"True",0x4, NULL),
                 2006,
                 Property::RDWT,
-                new PropValue(NULL, "True"));
-
-    propMaps["ThumbHeight"] = new Property(
-                "ThumbHeight",
-                getPropType(PropType::INT),
-                14,
-                Property::RDWT,
                 NULL);
 
-    propMaps["ThumbWidth"] = new Property(
-                "ThumbWidth",
+    propMaps["MaxPos"] = new Property(
+                "MaxPos",
                 getPropType(PropType::INT),
-                13,
+                7,
                 Property::RDWT,
-                NULL);
+                new PropValue(NULL, (long)100));
 
     propMaps["Align"] = new Property(
                 "Align",
@@ -373,20 +345,6 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 Property::RDWT,
                 new PropValue(NULL, (long)30));
 
-    propMaps["BlockChunk"] = new Property(
-                "BlockChunk",
-                EnumType::create(NULL, "False",0x0,"True",0x4, NULL),
-                2005,
-                Property::RDWT,
-                new PropValue(NULL, "False"));
-
-    propMaps["ShowPercent"] = new Property(
-                "ShowPercent",
-                EnumType::create(NULL, "False",0x0,"True",0x8, NULL),
-                2006,
-                Property::RDWT,
-                new PropValue(NULL, "False"));
-
     propMaps["YRadius"] = new Property(
                 "YRadius",
                 getPropType(PropType::INT),
@@ -422,20 +380,6 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 Property::RDWT,
                 new PropValue(NULL, (long)0));
 
-    propMaps["HaveArrows"] = new Property(
-                "HaveArrows",
-                EnumType::create(NULL, "False",0x0,"True",0x8, NULL),
-                2006,
-                Property::RDWT,
-                new PropValue(NULL, "True"));
-
-    propMaps["DoubleArrows"] = new Property(
-                "DoubleArrows",
-                EnumType::create(NULL, "None",0x0,"Right",0x20,"Left",0x10, NULL),
-                2007,
-                Property::RDWT,
-                new PropValue(NULL, "None"));
-
     propMaps["Month"] = new Property(
                 "Month",
                 getPropType(PropType::INT),
@@ -456,6 +400,20 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 7,
                 Property::RDWT,
                 NULL);
+
+    propMaps["PageStep"] = new Property(
+                "PageStep",
+                getPropType(PropType::INT),
+                11,
+                Property::RDWT,
+                new PropValue(NULL, (long)3));
+
+    propMaps["HaveArrows"] = new Property(
+                "HaveArrows",
+                EnumType::create(NULL, "False",0x0,"True",0x8, NULL),
+                2006,
+                Property::RDWT,
+                new PropValue(NULL, "True"));
 
     propMaps["AutoSort"] = new Property(
                 "AutoSort",
@@ -807,6 +765,41 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 Property::RDWT,
                 new PropValue(NULL, "Normal"));
 
+    propMaps["BlockChunk"] = new Property(
+                "BlockChunk",
+                EnumType::create(NULL, "False",0x0,"True",0x4, NULL),
+                2005,
+                Property::RDWT,
+                new PropValue(NULL, "False"));
+
+    propMaps["ShowPercent"] = new Property(
+                "ShowPercent",
+                EnumType::create(NULL, "False",0x0,"True",0x8, NULL),
+                2006,
+                Property::RDWT,
+                new PropValue(NULL, "False"));
+
+    propMaps["Ruler"] = new Property(
+                "Ruler",
+                EnumType::create(NULL, "False",0x8,"True",0x0, NULL),
+                2006,
+                Property::RDWT,
+                new PropValue(NULL, "True"));
+
+    propMaps["ThumbHeight"] = new Property(
+                "ThumbHeight",
+                getPropType(PropType::INT),
+                14,
+                Property::RDWT,
+                NULL);
+
+    propMaps["ThumbWidth"] = new Property(
+                "ThumbWidth",
+                getPropType(PropType::INT),
+                13,
+                Property::RDWT,
+                NULL);
+
     propMaps["Scale"] = new Property(
                 "Scale",
                 EnumType::create(NULL, "None",0x0,"AutoFit",0x20,"ImageScaled",0x10, NULL),
@@ -843,164 +836,6 @@ static void create_all_props(map<string, Property*> &propMaps) {
                 new PropValue(NULL, "True"));
 
 }
-
-static void init_event_ids(map<string, int>& eventMaps) {
-    
-    eventMaps["onCreate"] = MSG_CREATE;
-
-    eventMaps["onSizeChanging"] = MSG_SIZECHANGING;
-
-    eventMaps["onSizeChanged"] = MSG_SIZECHANGED;
-
-    eventMaps["onCSizeChanged"] = MSG_CSIZECHANGED;
-
-    eventMaps["onFontChanging"] = MSG_FONTCHANGING;
-
-    eventMaps["onFontChanged"] = MSG_FONTCHANGED;
-
-    eventMaps["onEraseBkgrnd"] = MSG_ERASEBKGND;
-
-    eventMaps["onPaint"] = MSG_PAINT;
-
-    eventMaps["onClose"] = MSG_CLOSE;
-
-    eventMaps["onKeyDown"] = MSG_KEYDOWN;
-
-    eventMaps["onKeyUp"] = MSG_KEYUP;
-
-    eventMaps["onChar"] = MSG_CHAR;
-
-    eventMaps["onSysKeyDown"] = MSG_SYSKEYDOWN;
-
-    eventMaps["onSysKeyUp"] = MSG_SYSKEYUP;
-
-    eventMaps["onSysChar"] = MSG_SYSCHAR;
-
-    eventMaps["onKeyLongPress"] = MSG_KEYLONGPRESS;
-
-    eventMaps["onKeyAlwaysPress"] = MSG_KEYALWAYSPRESS;
-
-    eventMaps["onLButtonDown"] = MSG_LBUTTONDOWN;
-
-    eventMaps["onLButtonUp"] = MSG_LBUTTONUP;
-
-    eventMaps["onLButtonDblClk"] = MSG_LBUTTONDBLCLK;
-
-    eventMaps["onMouseMove"] = MSG_MOUSEMOVE;
-
-    eventMaps["onRButtonDown"] = MSG_RBUTTONDOWN;
-
-    eventMaps["onRButtonUp"] = MSG_RBUTTONUP;
-
-    eventMaps["onRButtonDblClk"] = MSG_RBUTTONDBLCLK;
-
-    eventMaps["onHitTest"] = MSG_HITTEST;
-
-    eventMaps["onCommand"] = MSG_COMMAND;
-
-    eventMaps["onDestroy"] = MSG_DESTROY;
-
-    eventMaps["onSetFocus"] = MSG_SETFOCUS;
-
-    eventMaps["onKillFocus"] = MSG_KILLFOCUS;
-
-    eventMaps["onActive"] = MSG_ACTIVE;
-
-    eventMaps["onPosChanged"] = NCS_NOTIFY_CODE(NCSN_SPNR_CHANGED);
-
-    eventMaps["onReachMax"] = NCS_NOTIFY_CODE(NCSN_SPNR_REACHMAX);
-
-    eventMaps["onReachMin"] = NCS_NOTIFY_CODE(NCSN_SPNR_REACHMIN);
-
-    eventMaps["onHScroll"] = MSG_HSCROLL;
-
-    eventMaps["onVScroll"] = MSG_VSCROLL;
-
-    eventMaps["onSelChanged"] = NCS_NOTIFY_CODE(NCSN_CMBOX_SELCHANGE);
-
-    eventMaps["onEditChange"] = NCS_NOTIFY_CODE(NCSN_CMBOX_EDITCHANGE);
-
-    eventMaps["onDropDown"] = NCS_NOTIFY_CODE(NCSN_CMBOX_DROPDOWN);
-
-    eventMaps["onCloseUp"] = NCS_NOTIFY_CODE(NCSN_CMBOX_CLOSEUP);
-
-    eventMaps["onSelectOK"] = NCS_NOTIFY_CODE(NCSN_CMBOX_SELECTOK);
-
-    eventMaps["onSelectCancel"] = NCS_NOTIFY_CODE(NCSN_CMBOX_SELECTCANCEL);
-
-    eventMaps["onYearChanged"] = NCS_NOTIFY_CODE(NCSN_CDR_YEAR_CHANGED);
-
-    eventMaps["onMonthChanged"] = NCS_NOTIFY_CODE(NCSN_CDR_MONTH_CHANGED);
-
-    eventMaps["onDayChanged"] = NCS_NOTIFY_CODE(NCSN_CDR_DAY_CHANGED);
-
-    eventMaps["onSelChanging"] = NCS_NOTIFY_CODE(NCSN_ITEMV_SELCHANGING);
-
-    eventMaps["onClicked"] = NCS_NOTIFY_CODE(NCSN_WIDGET_CLICKED);
-
-    eventMaps["onEnter"] = NCS_NOTIFY_CODE(NCSN_ITEMV_ENTER);
-
-    eventMaps["onGainedFocus"] = NCS_NOTIFY_CODE(NCSN_ITEMV_SETFOCUS);
-
-    eventMaps["onLostFocus"] = NCS_NOTIFY_CODE(NCSN_ITEMV_KILLFOCUS);
-
-    eventMaps["onItemRDown"] = NCS_NOTIFY_CODE(NCSN_LISTV_ITEMRDOWN);
-
-    eventMaps["onItemRUp"] = NCS_NOTIFY_CODE(NCSN_LISTV_ITEMRUP);
-
-    eventMaps["onHdrRDown"] = NCS_NOTIFY_CODE(NCSN_LISTV_HDRRDOWN);
-
-    eventMaps["onHdrRUp"] = NCS_NOTIFY_CODE(NCSN_LISTV_HDRRUP);
-
-    eventMaps["onItemDBClk"] = NCS_NOTIFY_CODE(NCSN_LISTV_ITEMDBCLK);
-
-    eventMaps["onFoldItem"] = NCS_NOTIFY_CODE(NCSN_LISTV_FOLDITEM);
-
-    eventMaps["onUnfoldItem"] = NCS_NOTIFY_CODE(NCSN_LISTV_UNFOLDITEM);
-
-    eventMaps["onPushed"] = NCS_NOTIFY_CODE(NCSN_BUTTON_PUSHED);
-
-    eventMaps["onStateChanged"] = NCS_NOTIFY_CODE(NCSN_BUTTON_STATE_CHANGED);
-
-    eventMaps["onItemChanged"] = NCS_NOTIFY_CODE(NCSN_MNUBTN_ITEMCHANGED);
-
-    eventMaps["onEditChanged"] = NCS_NOTIFY_CODE(NCSN_EDIT_CHANGE);
-
-    eventMaps["onContentChanged"] = NCS_NOTIFY_CODE(NCSN_EDIT_CONTCHANGED);
-
-    eventMaps["onUpdate"] = NCS_NOTIFY_CODE(NCSN_EDIT_UPDATE);
-
-    eventMaps["onSelTextChanged"] = NCS_NOTIFY_CODE(NCSN_EDIT_SELCHANGED);
-
-    eventMaps["onTextReachMax"] = NCS_NOTIFY_CODE(NCSN_EDIT_MAXTEXT);
-
-    eventMaps["onBackSpace"] = NCS_NOTIFY_CODE(NCSN_LIST_BACKSPACE);
-
-    eventMaps["onEnterSubList"] = NCS_NOTIFY_CODE(NCSN_LIST_ENTERSUBLIST);
-
-    eventMaps["onBackUpList"] = NCS_NOTIFY_CODE(NCSN_LIST_BACKUPLIST);
-
-    eventMaps["onRootNodeChanged"] = NCS_NOTIFY_CODE(NCSN_LIST_ROOTNODECHANGED);
-
-    eventMaps["onRadioButtonChanged"] = NCS_NOTIFY_CODE(NCSN_BTNGRP_SELCHANGED);
-
-    eventMaps["onErrSpace"] = NCS_NOTIFY_CODE(NCSN_LSTBOX_ERRSPACE);
-
-    eventMaps["onDBLClick"] = NCS_NOTIFY_CODE(NCSN_LSTBOX_DBCLK);
-
-    eventMaps["onCheckMarkCancel"] = NCS_NOTIFY_CODE(NCSN_LSTBOX_CMCANCEL);
-
-    eventMaps["onClickCheckMark"] = NCS_NOTIFY_CODE(NCSN_LSTBOX_CLKCHKMARK);
-
-    eventMaps["onInitPage"] = MSG_INITPAGE;
-
-    eventMaps["onShowPage"] = MSG_SHOWPAGE;
-
-    eventMaps["onSheetCmd"] = MSG_SHEETCMD;
-
-    eventMaps["onColorChanged"] = NCS_NOTIFY_CODE(NCSN_CLRBTN_COLORCHANGED);
-
-}
 static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Widget", (mWidgetClass*)(&(Class(mWidget))));
@@ -1024,25 +859,66 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->addProperty(getNamedProperty("Notify"));
 
     
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("Spinner", (mWidgetClass*)(&(Class(mSpinner))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("LineStep"));
-	pwidget->addProperty(getNamedProperty("Direction"));
-	pwidget->addProperty(getNamedProperty("MinPos"));
-	pwidget->addProperty(getNamedProperty("CurPos"));
-	pwidget->addProperty(getNamedProperty("AutoLoop"));
-	pwidget->addProperty(getNamedProperty("MaxPos"));
+    
+    pwidget->addEvent("onCreate", MSG_CREATE);
 
-    
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("VSpinner", (mWidgetClass*)(&(Class(mVSpinner))));
-    widgetClasses.push_back(pwidget);
-    
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)32));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)32));
+    pwidget->addEvent("onSizeChanging", MSG_SIZECHANGING);
+
+    pwidget->addEvent("onSizeChanged", MSG_SIZECHANGED);
+
+    pwidget->addEvent("onCSizeChanged", MSG_CSIZECHANGED);
+
+    pwidget->addEvent("onFontChanging", MSG_FONTCHANGING);
+
+    pwidget->addEvent("onFontChanged", MSG_FONTCHANGED);
+
+    pwidget->addEvent("onEraseBkgrnd", MSG_ERASEBKGND);
+
+    pwidget->addEvent("onPaint", MSG_PAINT);
+
+    pwidget->addEvent("onClose", MSG_CLOSE);
+
+    pwidget->addEvent("onKeyDown", MSG_KEYDOWN);
+
+    pwidget->addEvent("onKeyUp", MSG_KEYUP);
+
+    pwidget->addEvent("onChar", MSG_CHAR);
+
+    pwidget->addEvent("onSysKeyDown", MSG_SYSKEYDOWN);
+
+    pwidget->addEvent("onSysKeyUp", MSG_SYSKEYUP);
+
+    pwidget->addEvent("onSysChar", MSG_SYSCHAR);
+
+    pwidget->addEvent("onKeyLongPress", MSG_KEYLONGPRESS);
+
+    pwidget->addEvent("onKeyAlwaysPress", MSG_KEYALWAYSPRESS);
+
+    pwidget->addEvent("onLButtonDown", MSG_LBUTTONDOWN);
+
+    pwidget->addEvent("onLButtonUp", MSG_LBUTTONUP);
+
+    pwidget->addEvent("onLButtonDblClk", MSG_LBUTTONDBLCLK);
+
+    pwidget->addEvent("onMouseMove", MSG_MOUSEMOVE);
+
+    pwidget->addEvent("onRButtonDown", MSG_RBUTTONDOWN);
+
+    pwidget->addEvent("onRButtonUp", MSG_RBUTTONUP);
+
+    pwidget->addEvent("onRButtonDblClk", MSG_RBUTTONDBLCLK);
+
+    pwidget->addEvent("onHitTest", MSG_HITTEST);
+
+    pwidget->addEvent("onCommand", MSG_COMMAND);
+
+    pwidget->addEvent("onDestroy", MSG_DESTROY);
+
+    pwidget->addEvent("onSetFocus", MSG_SETFOCUS);
+
+    pwidget->addEvent("onKillFocus", MSG_KILLFOCUS);
+
+    pwidget->addEvent("onActive", MSG_ACTIVE);
 
 }
 {
@@ -1057,6 +933,11 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->addProperty(getNamedProperty("HStepValue"));
 
     
+    
+    pwidget->addEvent("onHScroll", MSG_HSCROLL);
+
+    pwidget->addEvent("onVScroll", MSG_VSCROLL);
+
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Container", (mWidgetClass*)(&(Class(mContainer))));
@@ -1066,6 +947,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Panel", (mWidgetClass*)(&(Class(mPanel))));
@@ -1074,6 +956,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Combobox", (mWidgetClass*)(&(Class(mCombobox))));
@@ -1093,22 +976,100 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Font", new PropValue(NULL, ""));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)25));
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("Separator", (mWidgetClass*)(&(Class(mSeparator))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("Direction"));
-
-    	pwidget->setDefPropValue("Transparent", new PropValue(NULL, "True"));
-	pwidget->setDefPropValue("Notify", new PropValue(NULL, "False"));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("VSeparator", (mWidgetClass*)(&(Class(mVSeparator))));
-    widgetClasses.push_back(pwidget);
     
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)5));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
+    pwidget->addEvent("onSelChanged", NCS_NOTIFY_CODE(NCSN_CMBOX_SELCHANGE));
+
+    pwidget->addEvent("onSetFocus", NCS_NOTIFY_CODE(NCSN_CMBOX_SETFOCUS));
+
+    pwidget->addEvent("onKillFocus", NCS_NOTIFY_CODE(NCSN_CMBOX_KILLFOCUS));
+
+    pwidget->addEvent("onEditChange", NCS_NOTIFY_CODE(NCSN_CMBOX_EDITCHANGE));
+
+    pwidget->addEvent("onDropDown", NCS_NOTIFY_CODE(NCSN_CMBOX_DROPDOWN));
+
+    pwidget->addEvent("onCloseUp", NCS_NOTIFY_CODE(NCSN_CMBOX_CLOSEUP));
+
+    pwidget->addEvent("onSelectOK", NCS_NOTIFY_CODE(NCSN_CMBOX_SELECTOK));
+
+    pwidget->addEvent("onSelectCancel", NCS_NOTIFY_CODE(NCSN_CMBOX_SELECTCANCEL));
+
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("Spinner", (mWidgetClass*)(&(Class(mSpinner))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("LineStep"));
+	pwidget->addProperty(getNamedProperty("Direction"));
+	pwidget->addProperty(getNamedProperty("MinPos"));
+	pwidget->addProperty(getNamedProperty("CurPos"));
+	pwidget->addProperty(getNamedProperty("AutoLoop"));
+	pwidget->addProperty(getNamedProperty("MaxPos"));
+
+    
+    
+    pwidget->addEvent("onPosChanged", NCS_NOTIFY_CODE(NCSN_SPNR_CHANGED));
+
+    pwidget->addEvent("onReachMax", NCS_NOTIFY_CODE(NCSN_SPNR_REACHMAX));
+
+    pwidget->addEvent("onReachMin", NCS_NOTIFY_CODE(NCSN_SPNR_REACHMIN));
+
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("Static", (mWidgetClass*)(&(Class(mStatic))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("Align"));
+	pwidget->addProperty(getNamedProperty("AutoWrap"));
+	pwidget->addProperty(getNamedProperty("Valign"));
+
+    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
+	pwidget->setDefPropValue("TabStop", new PropValue(NULL, "False"));
+	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)25));
+
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("LEDLabel", (mWidgetClass*)(&(Class(mLEDLabel))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("LedColor"));
+	pwidget->addProperty(getNamedProperty("LedGap"));
+	pwidget->addProperty(getNamedProperty("LedWidth"));
+	pwidget->addProperty(getNamedProperty("LedHeight"));
+
+    	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
+
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("Rectangle", (mWidgetClass*)(&(Class(mRectangle))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("YRadius"));
+	pwidget->addProperty(getNamedProperty("EdgeColor"));
+	pwidget->addProperty(getNamedProperty("EdgeSize"));
+	pwidget->addProperty(getNamedProperty("FillColor"));
+	pwidget->addProperty(getNamedProperty("XRadius"));
+
+    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
+	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
+	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
+
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("MonthCalendar", (mWidgetClass*)(&(Class(mMonthCalendar))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("Month"));
+	pwidget->addProperty(getNamedProperty("Day"));
+	pwidget->addProperty(getNamedProperty("Year"));
+
+    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)250));
+	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
+	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)150));
+
+    
+    pwidget->addEvent("onYearChanged", NCS_NOTIFY_CODE(NCSN_CDR_YEAR_CHANGED));
+
+    pwidget->addEvent("onMonthChanged", NCS_NOTIFY_CODE(NCSN_CDR_MONTH_CHANGED));
+
+    pwidget->addEvent("onDayChanged", NCS_NOTIFY_CODE(NCSN_CDR_DAY_CHANGED));
 
 }
 {
@@ -1124,84 +1085,12 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("TrackBar", (mWidgetClass*)(&(Class(mTrackBar))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("Ruler"));
-	pwidget->addProperty(getNamedProperty("ThumbHeight"));
-	pwidget->addProperty(getNamedProperty("ThumbWidth"));
-
     
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("VTrackBar", (mWidgetClass*)(&(Class(mVTrackBar))));
-    widgetClasses.push_back(pwidget);
-    
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)40));
-	pwidget->setDefPropValue("ThumbHeight", new PropValue(NULL, (long)24));
-	pwidget->setDefPropValue("ThumbWidth", new PropValue(NULL, (long)12));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
+    pwidget->addEvent("onPosChanged", NCS_NOTIFY_CODE(NCSN_SLIDER_CHANGED));
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("Static", (mWidgetClass*)(&(Class(mStatic))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("Align"));
-	pwidget->addProperty(getNamedProperty("AutoWrap"));
-	pwidget->addProperty(getNamedProperty("Valign"));
+    pwidget->addEvent("onReachMax", NCS_NOTIFY_CODE(NCSN_SLIDER_REACHMAX));
 
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
-	pwidget->setDefPropValue("TabStop", new PropValue(NULL, "False"));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)25));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("LEDLabel", (mWidgetClass*)(&(Class(mLEDLabel))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("LedColor"));
-	pwidget->addProperty(getNamedProperty("LedGap"));
-	pwidget->addProperty(getNamedProperty("LedWidth"));
-	pwidget->addProperty(getNamedProperty("LedHeight"));
-
-    	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("ProgressBar", (mWidgetClass*)(&(Class(mProgressBar))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("LineStep"));
-	pwidget->addProperty(getNamedProperty("Direction"));
-	pwidget->addProperty(getNamedProperty("MinPos"));
-	pwidget->addProperty(getNamedProperty("BlockChunk"));
-	pwidget->addProperty(getNamedProperty("CurPos"));
-	pwidget->addProperty(getNamedProperty("ShowPercent"));
-	pwidget->addProperty(getNamedProperty("MaxPos"));
-
-    	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("VProgressBar", (mWidgetClass*)(&(Class(mVProgressBar))));
-    widgetClasses.push_back(pwidget);
-    
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)30));
-	pwidget->setDefPropValue("CurPos", new PropValue(NULL, (long)20));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("Rectangle", (mWidgetClass*)(&(Class(mRectangle))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("YRadius"));
-	pwidget->addProperty(getNamedProperty("EdgeColor"));
-	pwidget->addProperty(getNamedProperty("EdgeSize"));
-	pwidget->addProperty(getNamedProperty("FillColor"));
-	pwidget->addProperty(getNamedProperty("XRadius"));
-
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
-	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
+    pwidget->addEvent("onReachMin", NCS_NOTIFY_CODE(NCSN_SLIDER_REACHMIN));
 
 }
 {
@@ -1210,43 +1099,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->addProperty(getNamedProperty("HaveArrows"));
 
     
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("HScrollBar", (mWidgetClass*)(&(Class(mHScrollBar))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("DoubleArrows"));
-
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)25));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("MonthCalendar", (mWidgetClass*)(&(Class(mMonthCalendar))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("Month"));
-	pwidget->addProperty(getNamedProperty("Day"));
-	pwidget->addProperty(getNamedProperty("Year"));
-
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)250));
-	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)150));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("HSpinner", (mWidgetClass*)(&(Class(mHSpinner))));
-    widgetClasses.push_back(pwidget);
     
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)32));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)32));
-
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("HSeparator", (mWidgetClass*)(&(Class(mHSeparator))));
-    widgetClasses.push_back(pwidget);
-    
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)5));
-
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("GroupBox", (mWidgetClass*)(&(Class(mGroupBox))));
@@ -1256,6 +1109,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("ItemView", (mWidgetClass*)(&(Class(mItemView))));
@@ -1264,6 +1118,19 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->addProperty(getNamedProperty("Loop"));
 
     	pwidget->setDefPropValue("BgColor", new PropValue(NULL, (long)0xFFFFFFFF));
+
+    
+    pwidget->addEvent("onSelChanging", NCS_NOTIFY_CODE(NCSN_ITEMV_SELCHANGING));
+
+    pwidget->addEvent("onClicked", NCS_NOTIFY_CODE(NCSN_WIDGET_CLICKED));
+
+    pwidget->addEvent("onSelChanged", NCS_NOTIFY_CODE(NCSN_ITEMV_SELCHANGED));
+
+    pwidget->addEvent("onEnter", NCS_NOTIFY_CODE(NCSN_ITEMV_ENTER));
+
+    pwidget->addEvent("onGainedFocus", NCS_NOTIFY_CODE(NCSN_ITEMV_SETFOCUS));
+
+    pwidget->addEvent("onLostFocus", NCS_NOTIFY_CODE(NCSN_ITEMV_KILLFOCUS));
 
 }
 {
@@ -1279,6 +1146,21 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)250));
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)250));
+
+    
+    pwidget->addEvent("onItemRDown", NCS_NOTIFY_CODE(NCSN_LISTV_ITEMRDOWN));
+
+    pwidget->addEvent("onItemRUp", NCS_NOTIFY_CODE(NCSN_LISTV_ITEMRUP));
+
+    pwidget->addEvent("onHdrRDown", NCS_NOTIFY_CODE(NCSN_LISTV_HDRRDOWN));
+
+    pwidget->addEvent("onHdrRUp", NCS_NOTIFY_CODE(NCSN_LISTV_HDRRUP));
+
+    pwidget->addEvent("onItemDBClk", NCS_NOTIFY_CODE(NCSN_LISTV_ITEMDBCLK));
+
+    pwidget->addEvent("onFoldItem", NCS_NOTIFY_CODE(NCSN_LISTV_FOLDITEM));
+
+    pwidget->addEvent("onUnfoldItem", NCS_NOTIFY_CODE(NCSN_LISTV_UNFOLDITEM));
 
 }
 {
@@ -1300,6 +1182,13 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
 
+    
+    pwidget->addEvent("onClicked", NCS_NOTIFY_CODE(NCSN_WIDGET_CLICKED));
+
+    pwidget->addEvent("onPushed", NCS_NOTIFY_CODE(NCSN_BUTTON_PUSHED));
+
+    pwidget->addEvent("onStateChanged", NCS_NOTIFY_CODE(NCSN_BUTTON_STATE_CHANGED));
+
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("MenuButton", (mWidgetClass*)(&(Class(mMenuButton))));
@@ -1308,10 +1197,14 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)120));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
 
+    
+    pwidget->addEvent("onItemChanged", NCS_NOTIFY_CODE(NCSN_MNUBTN_ITEMCHANGED));
+
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("ScrollView", (mWidgetClass*)(&(Class(mScrollView))));
     widgetClasses.push_back(pwidget);
+    
     
     
 }
@@ -1329,6 +1222,17 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("BgColor", new PropValue(NULL, (long)0xFFFFFFFF));
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
 
+    
+    pwidget->addEvent("onEditChanged", NCS_NOTIFY_CODE(NCSN_EDIT_CHANGE));
+
+    pwidget->addEvent("onContentChanged", NCS_NOTIFY_CODE(NCSN_EDIT_CONTCHANGED));
+
+    pwidget->addEvent("onUpdate", NCS_NOTIFY_CODE(NCSN_EDIT_UPDATE));
+
+    pwidget->addEvent("onSelTextChanged", NCS_NOTIFY_CODE(NCSN_EDIT_SELCHANGED));
+
+    pwidget->addEvent("onTextReachMax", NCS_NOTIFY_CODE(NCSN_EDIT_MAXTEXT));
+
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("AbstractList", (mWidgetClass*)(&(Class(mAbstractList))));
@@ -1339,6 +1243,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 
     	pwidget->setDefPropValue("BgColor", new PropValue(NULL, (long)0xFFFFFFFF));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("List", (mWidgetClass*)(&(Class(mList))));
@@ -1352,6 +1257,19 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
 	pwidget->setDefPropValue("BgColor", new PropValue(NULL, (long)0xFFFFFFFF));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
+
+    
+    pwidget->addEvent("onSelChanged", NCS_NOTIFY_CODE(NCSN_LIST_SELCHANGED));
+
+    pwidget->addEvent("onEnter", NCS_NOTIFY_CODE(NCSN_LIST_ENTER));
+
+    pwidget->addEvent("onBackSpace", NCS_NOTIFY_CODE(NCSN_LIST_BACKSPACE));
+
+    pwidget->addEvent("onEnterSubList", NCS_NOTIFY_CODE(NCSN_LIST_ENTERSUBLIST));
+
+    pwidget->addEvent("onBackUpList", NCS_NOTIFY_CODE(NCSN_LIST_BACKUPLIST));
+
+    pwidget->addEvent("onRootNodeChanged", NCS_NOTIFY_CODE(NCSN_LIST_ROOTNODECHANGED));
 
 }
 {
@@ -1369,6 +1287,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Font", new PropValue(NULL, ""));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)32));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("CheckButton", (mWidgetClass*)(&(Class(mCheckButton))));
@@ -1380,6 +1299,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Transparent", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)25));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("RadioButton", (mWidgetClass*)(&(Class(mRadioButton))));
@@ -1387,6 +1307,17 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     
     	pwidget->setDefPropValue("GroupId", new PropValue(NULL, (long)-1));
 
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("Separator", (mWidgetClass*)(&(Class(mSeparator))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("Direction"));
+
+    	pwidget->setDefPropValue("Transparent", new PropValue(NULL, "True"));
+	pwidget->setDefPropValue("Notify", new PropValue(NULL, "False"));
+
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("ButtonGroup", (mWidgetClass*)(&(Class(mButtonGroup))));
@@ -1394,6 +1325,9 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)100));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
+
+    
+    pwidget->addEvent("onRadioButtonChanged", NCS_NOTIFY_CODE(NCSN_BTNGRP_SELCHANGED));
 
 }
 {
@@ -1408,16 +1342,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("HTrackBar", (mWidgetClass*)(&(Class(mHTrackBar))));
-    widgetClasses.push_back(pwidget);
     
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
-	pwidget->setDefPropValue("ThumbHeight", new PropValue(NULL, (long)12));
-	pwidget->setDefPropValue("ThumbWidth", new PropValue(NULL, (long)24));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)40));
-
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("MainWnd", (mWidgetClass*)(&(Class(mMainWnd))));
@@ -1437,6 +1362,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Class", new PropValue(NULL, "mainwnd"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("DialogBox", (mWidgetClass*)(&(Class(mDialogBox))));
@@ -1445,6 +1371,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("ListBox", (mWidgetClass*)(&(Class(mListBox))));
@@ -1460,6 +1387,15 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("BgColor", new PropValue(NULL, (long)0xFFFFFFFF));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
 
+    
+    pwidget->addEvent("onErrSpace", NCS_NOTIFY_CODE(NCSN_LSTBOX_ERRSPACE));
+
+    pwidget->addEvent("onDBLClick", NCS_NOTIFY_CODE(NCSN_LSTBOX_DBCLK));
+
+    pwidget->addEvent("onCheckMarkCancel", NCS_NOTIFY_CODE(NCSN_LSTBOX_CMCANCEL));
+
+    pwidget->addEvent("onClickCheckMark", NCS_NOTIFY_CODE(NCSN_LSTBOX_CLKCHKMARK));
+
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Page", (mWidgetClass*)(&(Class(mPage))));
@@ -1468,23 +1404,12 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Text", new PropValue(NULL, "0"));
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("HProgressBar", (mWidgetClass*)(&(Class(mHProgressBar))));
-    widgetClasses.push_back(pwidget);
     
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)200));
-	pwidget->setDefPropValue("CurPos", new PropValue(NULL, (long)20));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
+    pwidget->addEvent("onInitPage", MSG_INITPAGE);
 
-}
-{
-    WidgetClassDefine * pwidget = new WidgetClassDefine("VScrollBar", (mWidgetClass*)(&(Class(mVScrollBar))));
-    widgetClasses.push_back(pwidget);
-    	pwidget->addProperty(getNamedProperty("DoubleArrows"));
+    pwidget->addEvent("onShowPage", MSG_SHOWPAGE);
 
-    	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)25));
-	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)200));
+    pwidget->addEvent("onSheetCmd", MSG_SHEETCMD);
 
 }
 {
@@ -1495,6 +1420,9 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
     	pwidget->setDefPropValue("Width", new PropValue(NULL, (long)80));
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)30));
+
+    
+    pwidget->addEvent("onColorChanged", NCS_NOTIFY_CODE(NCSN_CLRBTN_COLORCHANGED));
 
 }
 {
@@ -1507,6 +1435,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
 
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("IconView", (mWidgetClass*)(&(Class(mIconView))));
@@ -1516,6 +1445,32 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)150));
 
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("ProgressBar", (mWidgetClass*)(&(Class(mProgressBar))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("LineStep"));
+	pwidget->addProperty(getNamedProperty("Direction"));
+	pwidget->addProperty(getNamedProperty("MinPos"));
+	pwidget->addProperty(getNamedProperty("BlockChunk"));
+	pwidget->addProperty(getNamedProperty("CurPos"));
+	pwidget->addProperty(getNamedProperty("ShowPercent"));
+	pwidget->addProperty(getNamedProperty("MaxPos"));
+
+    	pwidget->setDefPropValue("Border", new PropValue(NULL, "True"));
+
+    
+}
+{
+    WidgetClassDefine * pwidget = new WidgetClassDefine("TrackBar", (mWidgetClass*)(&(Class(mTrackBar))));
+    widgetClasses.push_back(pwidget);
+    	pwidget->addProperty(getNamedProperty("Ruler"));
+	pwidget->addProperty(getNamedProperty("ThumbHeight"));
+	pwidget->addProperty(getNamedProperty("ThumbWidth"));
+
+    
+    
 }
 {
     WidgetClassDefine * pwidget = new WidgetClassDefine("Animate", (mWidgetClass*)(&(Class(mAnimate))));
@@ -1531,6 +1486,7 @@ static void init_widget_class(vector<WidgetClassDefine*> & widgetClasses) {
 	pwidget->setDefPropValue("Border", new PropValue(NULL, "False"));
 	pwidget->setDefPropValue("Height", new PropValue(NULL, (long)100));
 
+    
 }
 
 }
