@@ -14,7 +14,7 @@
 #include "mgncs.h"
 #include "android-backend.h"
 #include "glue/glue_common.h"
-#include "miui-base.h"
+#include "mg-base.h"
 
 using std::string;
 

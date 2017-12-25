@@ -1,5 +1,5 @@
-#ifndef MIUI_BASE_H
-#define MIUI_BASE_H
+#ifndef MINIGUI_BASE_H
+#define MINIGUI_BASE_H
 
 #include <stdio.h>
 #include <dlfcn.h>

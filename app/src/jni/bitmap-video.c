@@ -15,7 +15,7 @@
 #include "sysvideo.h"
 #include "ial.h"
 
-#include "miui-base.h"
+#include "mg-base.h"
 #include "android-backend.h"
 
 #define ENGINE "MG_GAL_ENGINE"

@@ -65,7 +65,7 @@
 #  endif
 #endif
 
-#include "miui-base.h"
+#include "mg-base.h"
 
     /**
      * \defgroup macros_types Macros and data types commonly used

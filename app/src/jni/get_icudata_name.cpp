@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "miui-base.h"
+#include "mg-base.h"
 #include "get_icudata_name.h"
 
 #define ANDROID_ICU_DATA_PATH "/system/usr/icu"

@@ -8,7 +8,7 @@
 #include "gdi.h"
 #include "window.h"
 #include "mgncs.h"
-#include "miui-base.h"
+#include "mg-base.h"
 #include "glue_utils.h"
 
 using namespace v8;
