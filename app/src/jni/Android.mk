@@ -3,6 +3,7 @@ BASE_PATH := $(call my-dir)
 include $(BASE_PATH)/third_party/zlib/Android.mk
 include $(BASE_PATH)/third_party/libpng-1.2.37/Android.mk
 include $(BASE_PATH)/third_party/icu4c/Android.mk
+include $(BASE_PATH)/Python-2.7.14/Android.mk
 
 LOCAL_PATH:=$(BASE_PATH)
 include $(LOCAL_PATH)/Android.v8.mk
@@ -67,7 +68,7 @@ LOCAL_CFLAGS += -Wall -Wno-unused-function \
 				-Wall -Wno-unused-function -Wno-unused-variable \
 				-O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fpic -D__STDINT_LIMITS
 
-LOCAL_STATIC_LIBRARIES := libpng_static libz_static libicuuc_static libicui18n_static libv8
+LOCAL_STATIC_LIBRARIES := libpng_static libz_static libicuuc_static libicui18n_static libv8 libpython_static
 LOCAL_LDFLAGS = -llog -ljnigraphics -latomic
 
 $(warning $(gen_source_dummy))
