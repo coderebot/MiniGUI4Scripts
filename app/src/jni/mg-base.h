@@ -16,8 +16,8 @@
 #define ALOGE(TAG,...) ALOG(TAG, ERROR, __VA_ARGS__)
 #define ALOGV(TAG,...) ALOG(TAG, VERBOSE, __VA_ARGS__)
 
-#define printf(fmt, ...)  ALOGI("MiniGUI", fmt, #__VA_ARGS__)
-#define fprintf   android_fprintf
+//#define printf(fmt, ...)  ALOGI("MiniGUI", fmt, #__VA_ARGS__)
+//#define fprintf   android_fprintf
 
 
 #ifdef __cplusplus

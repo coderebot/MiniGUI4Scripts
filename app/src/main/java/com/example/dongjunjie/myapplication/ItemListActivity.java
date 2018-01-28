@@ -1,13 +1,16 @@
 package com.example.dongjunjie.myapplication;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.graphics.Bitmap;
 import android.app.Activity;
+import android.content.res.AssetManager;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,6 +23,10 @@ public class ItemListActivity extends Activity {
     static {
         System.loadLibrary("minigui");
     }
+    private static final String test_js = "test.js";
+    private static final String test_py = "win.py";
+    private static final int test_js_id = R.raw.test;
+    private static final int test_py_id = R.raw.win;
 
     private static final int SHRINK = 4;
 
@@ -27,6 +34,12 @@ public class ItemListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(new MyView(this));
+
+        try {
+            copyAssetDirToFiles(this, "python2.7");
+        } catch(IOException e) {
+            e.printStackTrace();        
+        }
     }
 
 
@@ -164,12 +177,17 @@ public class ItemListActivity extends Activity {
     }
 
     private long startMiniGUI(int width, int height) {
-        String file = "/data/test.js";
+        String script = test_py;
+        int script_id = test_py_id;
+
+        setPythonPath(getFilesDir().getPath() + "/python2.7");
+
+        String file = "/data/" + script;
         String source;
         source = readFile(file);
         if (source == null) {
-            file = "android://raw/test.js";
-            source = readRaw(R.raw.test);
+            file = "android://raw/" + script;
+            source = readRaw(script_id);
         }
 
         if (source == null) {
@@ -180,8 +198,42 @@ public class ItemListActivity extends Activity {
         return startMiniGUI(width, height, file, source);
     }
 
+	public static void copyAssetDirToFiles(Context context, String dirname)
+			throws IOException {
+		File dir = new File(context.getFilesDir() + "/" + dirname);
+		dir.mkdir();
+		
+		AssetManager assetManager = context.getAssets();
+		String[] children = assetManager.list(dirname);
+		for (String child : children) {
+			child = dirname + '/' + child;
+			String[] grandChildren = assetManager.list(child);
+			if (0 == grandChildren.length)
+				copyAssetFileToFiles(context, child);
+			else
+				copyAssetDirToFiles(context, child);
+		}
+	}
+	
+	public static void copyAssetFileToFiles(Context context, String filename)
+			throws IOException {
+		InputStream is = context.getAssets().open(filename);
+		byte[] buffer = new byte[is.available()];
+		is.read(buffer);
+		is.close();
+		
+		File of = new File(context.getFilesDir() + "/" + filename);
+		of.createNewFile();
+		FileOutputStream os = new FileOutputStream(of);
+		os.write(buffer);
+		os.close();
+        android.util.Log.i("MINIGUI", "Copy to " + context.getFilesDir() + "/" + filename);
+	}
+
+
     private static native long startMiniGUI(int width, int height, String file, String source);
     private static native void updateGAL(Bitmap bmp);
     private static native boolean processMessage(long hwnd);
     private static native void updateTouchEvent(int x, int y, int button);
+    private static native void setPythonPath(String path);
 }

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "mg-base.h"
 #include "glue_common.h"
 #include "glue_utils.h"
 
@@ -174,12 +175,25 @@ bool InitGlue() {
 
 
 extern "C" unsigned long RunV8Script(const char* script, const char* filename);
+extern "C" unsigned long RunPythonScript(const char* script, const char* filename);
+
+static struct {
+    const char* ext;
+    unsigned long(*run)(const char*,const char*);
+} _script_dispatcher[] = {
+    {"js", RunV8Script },
+    {"py", RunPythonScript},
+    {NULL, NULL}
+};
+
 
 unsigned long RunScript(const char* script, const char* filename) {
 
     const char* str_ext = strrchr(filename, '.');
-    if (str_ext && strcmp(str_ext, ".js") == 0) {
-        return RunV8Script(script, filename);
+    for (int i = 0; _script_dispatcher[i].ext; i++) {
+        if (strcmp(str_ext+1, _script_dispatcher[i].ext) == 0) {
+            return _script_dispatcher[i].run(script, filename);
+        }
     }
 
     ALOGE("MiniGUI Script", "unkwown script type:%s", filename);

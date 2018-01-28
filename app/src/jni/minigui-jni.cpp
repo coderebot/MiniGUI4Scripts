@@ -20,6 +20,13 @@ using std::string;
 
 JavaVM * g_jvm = NULL;
 
+//#define TEST
+#ifdef TEST
+#define TEST_JS "/data/test.js";
+#define TEST_PYTHON "/data/test.py";
+#define TEST_SCRIPT TEST_PYTHON
+#endif
+
 extern "C" GHANDLE __mgncs_get_mgetc (void);
 
 #define ItemListClass "com/example/dongjunjie/myapplication/ItemListActivity"
@@ -27,6 +34,8 @@ extern "C" GHANDLE __mgncs_get_mgetc (void);
 extern "C" void* get_surface_buffer(int *pw, int *ph);
 extern "C" int startMiniGUI(int, int);
 static int ial_fd_write;
+
+void RedirectStdOut();
 
 static string toString(JNIEnv* env, jstring jstr) {
     const char* chars = env->GetStringUTFChars(jstr, NULL);
@@ -81,7 +90,7 @@ static bool start_with(const char* s, const char* start) {
     return (strncmp(s, start, len) == 0);
 }
 
-#if 0
+#ifdef TEST
 unsigned long RunScript(const char* filename) {
     if (filename == NULL) {
         ALOGE("MiniGUI", "Invalidate Script Filename NULL");
@@ -121,6 +130,9 @@ unsigned long RunScript(const char* filename) {
 
 #include "test-button.c"
 static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jstring script_file, jstring script_source) {
+
+    RedirectStdOut();
+
     if(!startMiniGUI(width, height)) {
         ALOGE("MiniGUI", "start minigui failed");
     }
@@ -132,17 +144,21 @@ static jlong jni_startMiniGUI(JNIEnv* env, jclass, jint width, jint height, jstr
         return 0;
     }
 
-    //const char* test_script = "/data/test.js";
+#ifdef TEST
+    string str_script = TEST_SCRIPT;
 
-    //jlong ret = (jlong)RunScript(test_script);
+    jlong ret = (jlong)RunScript(str_script.c_str());
+#else
 
     string str_script = toString(env, script_file);
     string str_source = toString(env, script_source);
 
     jlong ret = (jlong)glue::RunScript(str_source.c_str(), str_script.c_str());
+#endif
 
     if (ret == 0) {
         ALOGE("MiniGUI", "Error run script:%s", str_script.c_str());
+        ALOGE("MiniGUI", "Error Script:%s", str_source.c_str());
         return (jlong)create_button_dialog();
     }
     return ret;
@@ -172,6 +188,12 @@ static void jni_updateTouchEvent(JNIEnv* env, jclass, jint x, jint y, jint butto
     }
 }
 
+static void jni_setPythonPath(JNIEnv* env, jclass, jstring path) {
+    string str_path = toString(env, path);
+
+    ALOGI("MINIGUI", "PYTHONPATH=%s",str_path.c_str());
+    setenv("PYTHONPATH", str_path.c_str(), 1);
+}
 
 static JNINativeMethod _render_methods[] {
     {"startMiniGUI", "(IILjava/lang/String;Ljava/lang/String;)J",
@@ -182,6 +204,8 @@ static JNINativeMethod _render_methods[] {
         (void*)(jni_processMessage)},
     {"updateTouchEvent", "(III)V",
         (void*)(jni_updateTouchEvent)},
+    {"setPythonPath", "(Ljava/lang/String;)V",
+        (void*)(jni_setPythonPath)},
 };
 
 static bool InitRender(JNIEnv* env) {
@@ -208,7 +232,6 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
 
     InitRender(env);
 
-
     return JNI_VERSION_1_4;
 }
 
@@ -216,7 +239,7 @@ int android_fprintf(FILE* f, const char* fmt, ...) {
     int ret = -1;
     va_list args;
     va_start(args, fmt);
-    if (f == stderr || f == stdout) {
+/*    if (f == stderr || f == stdout) {
         char szbuf[1024];
         ret = vsnprintf(szbuf, sizeof(szbuf), fmt, args);
         if (f == stderr) {
@@ -224,7 +247,7 @@ int android_fprintf(FILE* f, const char* fmt, ...) {
         } else {
             ALOGI("MiniGUI", "%s", szbuf);
         }
-    } else {
+    } else*/ {
         ret = vfprintf(f, fmt, args);
     }
 
