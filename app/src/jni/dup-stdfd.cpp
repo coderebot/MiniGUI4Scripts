@@ -23,8 +23,6 @@ struct Redirect {
         level = l;
 	    fprintf(fp, "\n"); //active the fpout;
         oldFds = dup2(fds[1], fileno(fp));
-        __android_log_print(ANDROID_LOG_INFO, "==DJJ", "oldFds=%d, fp=%p, fds={%d,%d}", oldFds, fp, fds[0], fds[1]);
-
     }
 
     int setFd(fd_set& fdset, int maxfd = 0) {

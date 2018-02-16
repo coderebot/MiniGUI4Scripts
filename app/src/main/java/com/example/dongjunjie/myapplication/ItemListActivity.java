@@ -38,7 +38,7 @@ public class ItemListActivity extends Activity {
         try {
             copyAssetDirToFiles(this, "python2.7");
         } catch(IOException e) {
-            e.printStackTrace();        
+            e.printStackTrace();
         }
     }
 
@@ -101,12 +101,14 @@ public class ItemListActivity extends Activity {
 
                 while (mIsMiniGUIRunning) {
                     updateGAL(mBitmap);
-                    Canvas canvas = holder.lockCanvas(null);//获取画布  
-                    canvas.drawBitmap(mBitmap, mSrcRt, mDstRt, null);
-                    holder.unlockCanvasAndPost(canvas);//解锁画布，提交画好的图像  
-                    try {
-                        Thread.sleep(1);
-                    } catch (Exception e) {
+                    Canvas canvas = holder.lockCanvas(null);//获取画布
+                    if (canvas != null) {
+                        canvas.drawBitmap(mBitmap, mSrcRt, mDstRt, null);
+                        holder.unlockCanvasAndPost(canvas);//解锁画布，提交画好的图像
+                        try {
+                            Thread.sleep(1);
+                        } catch (Exception e) {
+                        }
                     }
                 }
             }
@@ -201,8 +203,11 @@ public class ItemListActivity extends Activity {
 	public static void copyAssetDirToFiles(Context context, String dirname)
 			throws IOException {
 		File dir = new File(context.getFilesDir() + "/" + dirname);
+        if (dir.exists()) {
+            return ;
+        }
 		dir.mkdir();
-		
+
 		AssetManager assetManager = context.getAssets();
 		String[] children = assetManager.list(dirname);
 		for (String child : children) {
@@ -214,14 +219,14 @@ public class ItemListActivity extends Activity {
 				copyAssetDirToFiles(context, child);
 		}
 	}
-	
+
 	public static void copyAssetFileToFiles(Context context, String filename)
 			throws IOException {
 		InputStream is = context.getAssets().open(filename);
 		byte[] buffer = new byte[is.available()];
 		is.read(buffer);
 		is.close();
-		
+
 		File of = new File(context.getFilesDir() + "/" + filename);
 		of.createNewFile();
 		FileOutputStream os = new FileOutputStream(of);

@@ -15,6 +15,8 @@ using namespace v8;
 using namespace glue;
 using std::map;
 
+namespace v8_glue {
+
 static Isolate* sIsolate;
 static Persistent<Context> sContext;
 
@@ -327,7 +329,6 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
 
     static void do_onNotify(mWidget* self, int id, int nc, DWORD addData) {
         EventHandlerManager * m = get_event_handler_manager(self);
-        ALOGI("==DJJ", "onNotify nc=%d,id=%d,self=%s, m=%p", nc, id, _c(self)->typeName, m);
         if (m) {
             m->call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id, addData);
         }
@@ -512,7 +513,7 @@ static void widget_prop_get(Local<String> property, const PropertyCallbackInfo<V
     mWidget *widget = getWrapWidget(info.This());
     Property* prop = getWrapProperty(info.Data());
 
-    DWORD dwVal = _c(widget)->getProperty(widget, prop->id);
+    //DWORD dwVal = _c(widget)->getProperty(widget, prop->id);
     PValue val;
     if (getWidgetProperty(widget, prop, val)) {
         info.GetReturnValue().Set(fromPropValue(info.GetIsolate(), prop->type, val.d.uval));
@@ -1040,4 +1041,4 @@ extern "C" unsigned long RunV8Script(const char* script_source, const char* file
 
     return (unsigned long)(widget->hwnd);
 }
-
+}
