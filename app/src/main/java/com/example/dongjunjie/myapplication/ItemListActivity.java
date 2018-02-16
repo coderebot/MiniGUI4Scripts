@@ -10,6 +10,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.graphics.Bitmap;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -23,23 +25,70 @@ public class ItemListActivity extends Activity {
     static {
         System.loadLibrary("minigui");
     }
-    private static final String test_js = "test.js";
-    private static final String test_py = "win.py";
-    private static final int test_js_id = R.raw.test;
-    private static final int test_py_id = R.raw.win;
+    private static final String scripts[] = {
+        "javascript",
+        "python"
+    };
+    private static final String tests[] = {
+        "test.js",
+        "win.py"
+    };
+    private static final int test_ids[] = {
+        R.raw.test,
+        R.raw.win
+    };
+    private static final int SCRIPT_JS = 0;
+    private static final int SCRIPT_PYTHON = 1;
 
     private static final int SHRINK = 4;
+
+    private int mScriptType = -1;
+
+    private MyView mMyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(new MyView(this));
+        mMyView = new MyView(this);
+        setContentView(mMyView);
 
+        selectScriptType();
         try {
             copyAssetDirToFiles(this, "python2.7");
         } catch(IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void selectScriptType() {
+        AlertDialog.Builder singleChoiceDialog =
+            new AlertDialog.Builder(ItemListActivity.this);
+        singleChoiceDialog.setTitle("Select the script");
+        singleChoiceDialog.setSingleChoiceItems(scripts, 0,
+            new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mScriptType = which;
+                Log.i("MIUIGUI", "Select the script:" + scripts[mScriptType]);
+            }
+        });
+        singleChoiceDialog.setPositiveButton("OK",
+            new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mScriptType == -1) {
+                    mScriptType = 0;
+                }
+                Log.i("MIUIGUI", "Select the script:" + scripts[mScriptType]);
+                mMyView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mMyView.startThread();
+                    }
+                });
+            }
+        });
+        singleChoiceDialog.show();
     }
 
 
@@ -53,7 +102,8 @@ public class ItemListActivity extends Activity {
         private Bitmap mBitmap;
         private Rect  mSrcRt;
         private Rect  mDstRt;
-        private boolean mIsMiniGUIRunning = false;
+        private boolean mIsMINIGUIRunning = false;
+        private boolean mIsSurfaceCreated = false;
 
         public MyView(Context context) {
             super(context);
@@ -70,7 +120,20 @@ public class ItemListActivity extends Activity {
         public void surfaceCreated(SurfaceHolder holder) {
             // TODO Auto-generated method stub
             verifyBitmap();
-            new Thread(new MyThread()).start();
+            mIsSurfaceCreated = true;
+            if (mScriptType >= 0) {
+                startThread();
+            }
+        }
+
+        public void startThread() {
+            if (mScriptType >= 0 && mIsSurfaceCreated) {
+                try {
+                    new Thread(new MyThread()).start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
@@ -85,13 +148,13 @@ public class ItemListActivity extends Activity {
             @Override
             public void run() {
                 long hwnd = startMiniGUI(mBitmap.getWidth(), mBitmap.getHeight());
-                mIsMiniGUIRunning = true;
+                mIsMINIGUIRunning = true;
 
                 new Thread(new UpdateGALThread()).start();
 
                 // TODO Auto-generated method stub
                 while (processMessage(hwnd)) { }
-                mIsMiniGUIRunning = false;
+                mIsMINIGUIRunning = false;
             }
         }
 
@@ -99,7 +162,7 @@ public class ItemListActivity extends Activity {
             @Override
             public void run() {
 
-                while (mIsMiniGUIRunning) {
+                while (mIsMINIGUIRunning) {
                     updateGAL(mBitmap);
                     Canvas canvas = holder.lockCanvas(null);//获取画布
                     if (canvas != null) {
@@ -179,10 +242,14 @@ public class ItemListActivity extends Activity {
     }
 
     private long startMiniGUI(int width, int height) {
-        String script = test_py;
-        int script_id = test_py_id;
+        String script = tests[mScriptType];
+        int script_id = test_ids[mScriptType];
 
-        setPythonPath(getFilesDir().getPath() + "/python2.7");
+        Log.i("MINIGUI", "startMiniGUI type="+scripts[mScriptType] + ",script="+script+", id="+script_id);
+
+        if (mScriptType == SCRIPT_PYTHON) {
+            setPythonPath(getFilesDir().getPath() + "/python2.7");
+        }
 
         String file = "/data/" + script;
         String source;
@@ -193,7 +260,7 @@ public class ItemListActivity extends Activity {
         }
 
         if (source == null) {
-            Log.i("MiniGUI V8", "cannot open script file:"+file);
+            Log.i("MINIGUI", "cannot open script file:"+file);
             return 0;
         }
 
