@@ -27,15 +27,18 @@ public class ItemListActivity extends Activity {
     }
     private static final String scripts[] = {
         "javascript",
-        "python"
+        "python",
+        "lua"
     };
     private static final String tests[] = {
         "test.js",
-        "win.py"
+        "win.py",
+        "luatest.lua"
     };
     private static final int test_ids[] = {
         R.raw.test,
-        R.raw.win
+        R.raw.win,
+        R.raw.luatest
     };
     private static final int SCRIPT_JS = 0;
     private static final int SCRIPT_PYTHON = 1;

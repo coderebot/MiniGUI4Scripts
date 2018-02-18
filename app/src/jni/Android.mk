@@ -4,6 +4,7 @@ PYTHON_PATH=python-2.7.14
 include $(BASE_PATH)/third_party/zlib/Android.mk
 include $(BASE_PATH)/third_party/libpng-1.2.37/Android.mk
 include $(BASE_PATH)/third_party/icu4c/Android.mk
+include $(BASE_PATH)/lua-5.1.5/Android.mk
 #include $(BASE_PATH)/Python-2.7.14/Android.mk
 
 LOCAL_PATH:=$(BASE_PATH)
@@ -35,7 +36,8 @@ glue_sources= $(gen_source_dummy) \
 		   	  glue/glue_common.cpp \
 			  glue/v8_glue.cpp \
 			  glue/python_glue.cpp \
-			  glue/glue_utils.cpp
+			  glue/glue_utils.cpp \
+			  glue/lua_glue.cpp
 
 LOCAL_SRC_FILES := $(minigui_sources) \
 	$(mgutils_sources) \
@@ -60,7 +62,8 @@ LOCAL_C_INCLUDES := \
 	$(mgncs_includes) \
 	$(LOCAL_PATH)/third_party/libpng-1.2.37 \
 	$(V8_INCLUDES) \
-	$(LOCAL_PATH)/$(PYTHON_PATH)/include/python2.7
+	$(LOCAL_PATH)/$(PYTHON_PATH)/include/python2.7 \
+	$(LOCAL_PATH)/lua-5.1.5/src
 
 LOCAL_CFLAGS += -Wall -Wno-unused-function \
 				-Wno-unused-variable -O3 \
@@ -72,7 +75,7 @@ LOCAL_CFLAGS += -Wall -Wno-unused-function \
 				-Wall -Wno-unused-function -Wno-unused-variable \
 				-O3 -funroll-loops -ftree-vectorize -ffast-math -fpermissive -fpic -D__STDINT_LIMITS
 
-LOCAL_STATIC_LIBRARIES := libpng_static libz_static libicuuc_static libicui18n_static libv8
+LOCAL_STATIC_LIBRARIES := libpng_static libz_static libicuuc_static libicui18n_static libv8 liblua
 LOCAL_LDFLAGS = -lc -llog -ljnigraphics -latomic
 LOCAL_LDFLAGS += $(LOCAL_PATH)/$(PYTHON_PATH)/lib/libpython2.7.a
 

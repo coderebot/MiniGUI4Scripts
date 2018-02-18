@@ -176,6 +176,7 @@ bool InitGlue() {
 
 extern "C" unsigned long RunV8Script(const char* script, const char* filename);
 extern "C" unsigned long RunPythonScript(const char* script, const char* filename);
+extern "C" unsigned long RunLuaScript(const char* script, const char* filename);
 
 static struct {
     const char* ext;
@@ -183,6 +184,7 @@ static struct {
 } _script_dispatcher[] = {
     {"js", RunV8Script },
     {"py", RunPythonScript},
+    {"lua", RunLuaScript},
     {NULL, NULL}
 };
 
@@ -198,6 +200,56 @@ unsigned long RunScript(const char* script, const char* filename) {
 
     ALOGE("MiniGUI Script", "unkwown script type:%s", filename);
     return 0;
+}
+
+void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
+    int len = strlen(prefix);
+#define _D_TMP(format, member) ALOGI("MINIGUI", "\t%s"#member "= " format, prefix, tmpl->member)
+    ALOGI("MINIGUI", "%s{", prefix);
+    _D_TMP("%s", class_name);
+    _D_TMP("%d", id);
+    _D_TMP("%d", x);
+    _D_TMP("%d", y);
+    _D_TMP("%d", w);
+    _D_TMP("%d", h);
+    _D_TMP("0x%08X", style);
+    _D_TMP("0x%08X", ex_style);
+    _D_TMP("%s", caption);
+    if (tmpl->props) {
+        for (int i = 0; tmpl->props[i].id > 0; i++) {
+            ALOGI("MINIGUI", "\t%sProp %d=0x%08x", prefix, tmpl->props[i].id, tmpl->props[i].value);
+        }
+    }
+    if (tmpl->rdr_info) {
+        ALOGI("MINIGUI", "\t%sglobal render=%s", tmpl->rdr_info->glb_rdr);
+        ALOGI("MINIGUI", "\t%scontrol render=%s", tmpl->rdr_info->ctl_rdr);
+        if (tmpl->rdr_info->elements) {
+            for(int i = 0; tmpl->rdr_info->elements[i].id > 0; i++) {
+                ALOGI("MINIGUI", "\t%sRdr %d=0x%08x", tmpl->rdr_info->elements[i].id, tmpl->rdr_info->elements[i].value);
+            }
+        }
+    }
+
+    if(tmpl->handlers) {
+        for (int i = 0; tmpl->handlers[i].handler != NULL; i++) {
+            ALOGI("MINIGUI", "\t%sHandler message 0x%08x: handler:%p", prefix, tmpl->handlers[i].message, tmpl->handlers[i].handler);
+        }
+    }
+
+    _D_TMP("0x%08x", bk_color);
+    _D_TMP("%s", font_name);
+
+    if (tmpl->ctrls) {
+        prefix[len] = '\t';
+        prefix[len+1] = '\0';
+        for (int i = 0; i < tmpl->count; i++) {
+            dumpWndTemplate(&tmpl->ctrls[i], prefix);
+        }
+        prefix[len] = '\0';
+    }
+
+    ALOGI("MINIGUI", "%s}", prefix);
+#undef _D_TMP
 }
 
 

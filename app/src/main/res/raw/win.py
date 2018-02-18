@@ -637,7 +637,7 @@ def on_open_window(nc, widgetPtr, cid, addData):
         mg.log("on_open_window="+str(sel))
         if sel >= 0 and sel < len(sub_tmpls):
             mg.log("open window:"+str(sub_tmpls[sel]))
-            mg.DoModel(sub_tmpls[sel], widgetPtr)
+            mg.DoModal(sub_tmpls[sel], widgetPtr)
         else:
             mg.MessageBox(widgetPtr, "please select the window first!", "Error", mg.MB_OK)
     except Exception, e:

@@ -15,67 +15,6 @@ namespace python_glue {
 
 static PyObject *py_mg_module = NULL;
 
-
-static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
-    int len = strlen(prefix);
-#define _D_TMP(format, member) ALOGI("PyGlue", "\t%s"#member "= " format, prefix, tmpl->member)
-    ALOGI("PyGlue", "%s{", prefix);
-    _D_TMP("%s", class_name);
-    _D_TMP("%d", id);
-    _D_TMP("%d", x);
-    _D_TMP("%d", y);
-    _D_TMP("%d", w);
-    _D_TMP("%d", h);
-    _D_TMP("0x%08X", style);
-    _D_TMP("0x%08X", ex_style);
-    _D_TMP("%s", caption);
-    if (tmpl->props) {
-        for (int i = 0; tmpl->props[i].id > 0; i++) {
-            ALOGI("PyGlue", "\t%sProp %d=0x%08x", prefix, tmpl->props[i].id, tmpl->props[i].value);
-        }
-    }
-    if (tmpl->rdr_info) {
-        ALOGI("PyGlue", "\t%sglobal render=%s", tmpl->rdr_info->glb_rdr);
-        ALOGI("PyGlue", "\t%scontrol render=%s", tmpl->rdr_info->ctl_rdr);
-        if (tmpl->rdr_info->elements) {
-            for(int i = 0; tmpl->rdr_info->elements[i].id > 0; i++) {
-                ALOGI("PyGlue", "\t%sRdr %d=0x%08x", tmpl->rdr_info->elements[i].id, tmpl->rdr_info->elements[i].value);
-            }
-        }
-    }
-
-    if(tmpl->handlers) {
-        for (int i = 0; tmpl->handlers[i].handler != NULL; i++) {
-            ALOGI("PyGlue", "\t%sHandler message 0x%08x: handler:%p", prefix, tmpl->handlers[i].message, tmpl->handlers[i].handler);
-        }
-    }
-
-    _D_TMP("0x%08x", bk_color);
-    _D_TMP("%s", font_name);
-
-    if (tmpl->ctrls) {
-        prefix[len] = '\t';
-        prefix[len+1] = '\0';
-        for (int i = 0; i < tmpl->count; i++) {
-            dumpWndTemplate(&tmpl->ctrls[i], prefix);
-        }
-        prefix[len] = '\0';
-    }
-
-    ALOGI("PyGlue", "%s}", prefix);
-#undef _D_TMP
-}
-
-
-static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl) {
-    char szPrefix[64] = "\0";
-    dumpWndTemplate(tmpl, szPrefix);
-}
-static void dumpWndTemplate(const NCS_MNWND_TEMPLATE* tmp) {
-    dumpWndTemplate((const NCS_WND_TEMPLATE*)tmp);
-}
-
-
 static void dumpPythonError() {
     PyObject *exception, *v, *tb;
     PyErr_Fetch(&exception, &v, &tb);
@@ -164,112 +103,43 @@ TYPEINFO(float, "f")
 TYPEINFO(double, "d")
 TYPEINFO(char*, "s")
 
-class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
-    typedef map<int, PyObject*> FunctionMap;
-    FunctionMap functionMap;
+struct PyScript {
+    typedef PyObject* persistent_handler_t;
+    typedef PyObject* local_handler_t;
 
-    static void on_created(EventHandlerManager* self, mWidget* widget, DWORD special_id) {
-        self->onCreate(widget);
+    TEventHandlerManager<PyScript> * manager;
+
+    PyScript(TEventHandlerManager<PyScript> * m)
+    : manager(m) { }
+
+    static bool isFunc(PyObject* func) {
+        return PyCallable_Check(func) != 0;
     }
 
-    void onCreate(mWidget* widget) {
-        SetWidgetEventHandlers(widget, (void*)this);
+    static void addRef(PyObject* func) {
+        Py_INCREF(func);
+    }
+    static void release(PyObject* obj) {
+        Py_DECREF(obj);
     }
 
-    static BOOL do_onCreate(mWidget* self, DWORD dwAddData) {
-        EventHandlerManager * m = from(self);
-        if (m) {
-            m->call<void>(MSG_CREATE, (unsigned long)self);
-        }
-        return TRUE;
+    static void assign(PyObject* & d, PyObject* s) {
+        d = s;
     }
 
-#define DO_NO_VOID(name, message) \
-    static void do_##name(mWidget* self) { \
-        EventHandlerManager * m = from(self); \
-        if (m) { \
-            m->call<void>(message, (unsigned long)self); \
-        } \
-    }
-
-    DO_NO_VOID(onClose, MSG_CLOSE)
-
-    static void do_message(mWidget* self, int message) {
-        EventHandlerManager * m = from(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self);
-        }
-    }
-
-    static BOOL do_onKey(mWidget* self, int message, int scancode, DWORD key_status) {
-        EventHandlerManager * m = from(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self, scancode, key_status);
-        }
-        return NCSR_CONTINUE_MSG;
-    }
-
-    static BOOL do_onMouse(mWidget* self, int message, int x, int y, DWORD key_status) {
-        EventHandlerManager * m = from(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self, x, y, key_status);
-        }
-        return NCSR_CONTINUE_MSG;
-    }
-
-    static void do_onNotify(mWidget* self, int id, int nc, DWORD addData) {
-        EventHandlerManager * m = from(self);
-        if (m) {
-            m->call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id, addData);
-        }
-    }
-
-    static void* getNativeHandler(int id) {
-        switch(id) {
-        case MSG_CREATE: return (void*) do_onCreate;
-        case MSG_FONTCHANGED:
-        case MSG_DESTROY:
-        case MSG_SETFOCUS:
-        case MSG_KILLFOCUS:
-            return (void*) do_message;
-        case MSG_CLOSE:
-            return (void*) do_onClose;
-        case MSG_KEYDOWN:
-        case MSG_KEYUP:
-        case MSG_CHAR:
-        case MSG_SYSKEYDOWN:
-        case MSG_SYSKEYUP:
-        case MSG_SYSCHAR:
-        case MSG_KEYLONGPRESS:
-        case MSG_KEYALWAYSPRESS:
-            return (void*)do_onKey;
-        case MSG_LBUTTONDOWN:
-        case MSG_LBUTTONUP:
-        case MSG_MOUSEMOVE:
-        case MSG_RBUTTONDOWN:
-        case MSG_RBUTTONUP:
-        case MSG_RBUTTONDBLCLK:
-            return (void*)do_onMouse;
-        default:
-            if ((id & 0xFFFF0000) == 0xFFFF0000) {
-                return (void*)do_onNotify;
-            }
-        }
+    static local_handler_t toNullLocal() {
         return NULL;
     }
 
-    PyObject* getHandler(int code) {
-        FunctionMap::iterator it = functionMap.find(code);
-        if (it == functionMap.end())
-            return NULL;
-        return it->second;
+    void setWidgetObject(mWidget* ) {
+        //Do nothing
     }
 
     PyObject * callFunc(int code, const char* format, ...) {
         PyObject * py_ret = Py_None;
         va_list va;
         va_start(va, format);
-        PyObject * func = getHandler(code);
+        PyObject* func = manager->getHandler(code);
         if (func) {
             PyObject * args = Py_VaBuildValue(format, va);
             py_ret = PyObject_CallObject(func, args);
@@ -332,60 +202,10 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
                 callFunc(code, signatures, code, a1, a2, a3, a4, a5));
     }
 
-public:
-    EventHandlerManager() {
-        onCreated = (void(*)(NCS_CREATE_NOTIFY_INFO*,mComponent*,DWORD))on_created;
-    }
-
-    ~EventHandlerManager() {
-        for (FunctionMap::iterator it = functionMap.begin();
-                it != functionMap.end(); ++it) {
-            Py_DECREF(it->second);
-        }
-    }
-
-    static inline EventHandlerManager* from(mWidget* w) {
-        return (EventHandlerManager*) GetWidgetEventHandlers(w);
-    }
-
-    void addEventHandler(int code, PyObject* py_func) {
-        if (!PyCallable_Check(py_func)) {
-            return ;
-        }
-
-        Py_INCREF(py_func);
-        functionMap[code] = py_func;
-    }
-
-    NCS_EVENT_HANDLER* createHandlers() {
-        int count = functionMap.size();
-        if (count <= 0) {
-            return NULL;
-        }
-
-        NCS_EVENT_HANDLER * handlers = new NCS_EVENT_HANDLER[count + 1];
-        int i = 0;
-        for (FunctionMap::iterator it = functionMap.begin();
-                it != functionMap.end(); ++it) {
-            void *handle = getNativeHandler(it->first);
-            if (handle) {
-                handlers[i].message = it->first;
-                handlers[i].handler = handle;
-                i ++;
-            }
-        }
-
-        handlers[i].message = 0;
-        handlers[i].handler = NULL;
-        return handlers;
-    }
-
-    void apply(NCS_WND_TEMPLATE* pwnd_tmpl) {
-        pwnd_tmpl->handlers = createHandlers();
-        pwnd_tmpl->notify_info = this;
-    }
-
 };
+
+typedef TEventHandlerManager<PyScript> EventHandlerManager;
+
 
 
 static WidgetClassDefine * get_widget_class_define(NCS_WND_TEMPLATE* pwnd_tmpl, PyObject *dict) {
@@ -534,7 +354,7 @@ static PyObject* mg_MessageBox(PyObject* self, PyObject* args) {
     return Py_None;
 }
 
-static PyObject* mg_DoModel(PyObject* self, PyObject* args) {
+static PyObject* mg_DoModal(PyObject* self, PyObject* args) {
     PyObject * dict = NULL;
     mWidget* host = NULL;
     if (!PyArg_ParseTuple(args, "O|l", &dict, &host)) {
@@ -598,7 +418,7 @@ static PyMethodDef mg_methods[] = {
     {"CreateMainWindow", mg_createMainWindow, METH_VARARGS, "create the main window"},
     {"wrap", mg_wrap, METH_VARARGS, "wrap widget object"},
     {"MessageBox", mg_MessageBox, METH_VARARGS, "MessageBox"},
-    {"DoModel", mg_DoModel, METH_VARARGS, "DoModel"},
+    {"DoModal", mg_DoModal, METH_VARARGS, "DoModal"},
     {"findWndObject", mg_findWndObject, METH_VARARGS, "find window object"},
     {NULL, NULL}
 };
@@ -613,7 +433,7 @@ static PyMethodDef mg_methods[] = {
 
 #define ADD_INT_CONST(name) ADD_INT_CONSTEX(#name, name)
 
-static void init_constans(PyObject* m) {
+static void init_constants(PyObject* m) {
     ADD_INT_CONST(MB_OK);
     ADD_INT_CONST(MB_OKCANCEL);
     ADD_INT_CONST(MB_YESNO);
@@ -645,7 +465,7 @@ static void initmg() {
         ALOGE("PYTHON MINIGUI","init python mg module failed");
         goto err;
     }
-    init_constans(m);
+    init_constants(m);
 
     //add into globals
     if (globals) {

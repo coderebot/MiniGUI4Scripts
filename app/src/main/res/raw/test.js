@@ -649,7 +649,7 @@ function openWindow() {
     print("sel=" + sel);
     if (sel >= 0 && sel < sub_tmpls.length) {
         print(sub_tmpls[sel]);
-        mg.DoModel(listbox, sub_tmpls[sel]);
+        mg.DoModal(listbox, sub_tmpls[sel]);
     } else {
         mg.MessageBox(listbox, "please select the window first!", "Error", mg.MB_OK);
     }

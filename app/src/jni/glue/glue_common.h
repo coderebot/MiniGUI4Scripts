@@ -354,6 +354,192 @@ void SetWidgetEventHandlers(mWidget* widget, void *pt);
 
 unsigned long RunScript(const char* script, const char* filename);
 
+
+void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix);
+
+static inline void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl) {
+    char szPrefix[64] = "\0";
+    dumpWndTemplate(tmpl, szPrefix);
+}
+static inline void dumpWndTemplate(const NCS_MNWND_TEMPLATE* tmp) {
+    dumpWndTemplate((const NCS_WND_TEMPLATE*)tmp);
+}
+
+template<class TScriptObject>
+class TEventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
+    typedef TScriptObject script_t;
+    typedef typename script_t::persistent_handler_t persistent_handler_t;
+    typedef typename script_t::local_handler_t local_handler_t;
+    typedef TEventHandlerManager<script_t> self_t;
+
+    typedef map<int, persistent_handler_t> FunctionMap;
+    script_t    script;
+    FunctionMap functionMap;
+
+    static void on_created(self_t* self, mWidget* widget, DWORD special_id) {
+        self->onCreate(widget);
+    }
+
+    void onCreate(mWidget* widget) {
+        SetWidgetEventHandlers(widget, (void*)this);
+        script.setWidgetObject(widget);
+    }
+
+    static BOOL do_onCreate(mWidget* self, DWORD dwAddData) {
+        self_t * m = from(self);
+        if (m) {
+            m->script.template call<void>(MSG_CREATE, (unsigned long)self);
+        }
+        return TRUE;
+    }
+
+#define DO_NO_VOID(name, message) \
+    static void do_##name(mWidget* self) { \
+        self_t * m = from(self); \
+        if (m) { \
+            m->script.template call<void>(message, (unsigned long)self); \
+        } \
+    }
+
+    DO_NO_VOID(onClose, MSG_CLOSE)
+
+    static void do_message(mWidget* self, int message) {
+        self_t * m = from(self);
+        if (m) {
+            m->script.template call<void>(message, (unsigned long)self);
+        }
+    }
+
+    static BOOL do_onKey(mWidget* self, int message, int scancode, DWORD key_status) {
+        self_t * m = from(self);
+        if (m) {
+            m->script.template call<void>(message, (unsigned long)self, scancode, key_status);
+        }
+        return NCSR_CONTINUE_MSG;
+    }
+
+    static BOOL do_onMouse(mWidget* self, int message, int x, int y, DWORD key_status) {
+        self_t * m = from(self);
+        if (m) {
+            m->script.template call<void>(message, (unsigned long)self, x, y, key_status);
+        }
+        return NCSR_CONTINUE_MSG;
+    }
+
+    static void do_onNotify(mWidget* self, int id, int nc, DWORD addData) {
+        self_t * m = from(self);
+        if (m) {
+            m->script.template call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id, addData);
+        }
+    }
+
+    static void* getNativeHandler(int id) {
+        switch(id) {
+        case MSG_CREATE: return (void*) do_onCreate;
+        case MSG_FONTCHANGED:
+        case MSG_DESTROY:
+        case MSG_SETFOCUS:
+        case MSG_KILLFOCUS:
+            return (void*) do_message;
+        case MSG_CLOSE:
+            return (void*) do_onClose;
+        case MSG_KEYDOWN:
+        case MSG_KEYUP:
+        case MSG_CHAR:
+        case MSG_SYSKEYDOWN:
+        case MSG_SYSKEYUP:
+        case MSG_SYSCHAR:
+        case MSG_KEYLONGPRESS:
+        case MSG_KEYALWAYSPRESS:
+            return (void*)do_onKey;
+        case MSG_LBUTTONDOWN:
+        case MSG_LBUTTONUP:
+        case MSG_MOUSEMOVE:
+        case MSG_RBUTTONDOWN:
+        case MSG_RBUTTONUP:
+        case MSG_RBUTTONDBLCLK:
+            return (void*)do_onMouse;
+        default:
+            if ((id & 0xFFFF0000) == 0xFFFF0000) {
+                return (void*)do_onNotify;
+            }
+        }
+        return NULL;
+    }
+
+public:
+    local_handler_t getHandler(int code) {
+        typename FunctionMap::iterator it = functionMap.find(code);
+        if (it == functionMap.end())
+            return script.toNullLocal();
+        local_handler_t lret;
+        script.assign(lret, it->second);
+        return lret;
+    }
+
+    TEventHandlerManager()
+    :script(this) {
+        onCreated = (void(*)(NCS_CREATE_NOTIFY_INFO*,mComponent*,DWORD))on_created;
+    }
+
+    template<class A>
+    TEventHandlerManager(A a)
+    :script(this, a) {
+        onCreated = (void(*)(NCS_CREATE_NOTIFY_INFO*,mComponent*,DWORD))on_created;
+    }
+
+    ~TEventHandlerManager() {
+        for (typename FunctionMap::iterator it = functionMap.begin();
+                it != functionMap.end(); ++it) {
+            script.release(it->second);
+        }
+    }
+
+    static inline self_t* from(mWidget* w) {
+        return (self_t*) GetWidgetEventHandlers(w);
+    }
+
+    void addEventHandler(int code, local_handler_t func) {
+        if (!script.isFunc(func)) {
+            return ;
+        }
+
+        script.addRef(func);
+
+        script.assign(functionMap[code], func);
+    }
+
+    NCS_EVENT_HANDLER* createHandlers() {
+        int count = functionMap.size();
+        if (count <= 0) {
+            return NULL;
+        }
+
+        NCS_EVENT_HANDLER * handlers = new NCS_EVENT_HANDLER[count + 1];
+        int i = 0;
+        for (typename FunctionMap::iterator it = functionMap.begin();
+                it != functionMap.end(); ++it) {
+            void *handle = getNativeHandler(it->first);
+            if (handle) {
+                handlers[i].message = it->first;
+                handlers[i].handler = handle;
+                i ++;
+            }
+        }
+
+        handlers[i].message = 0;
+        handlers[i].handler = NULL;
+        return handlers;
+    }
+
+    void apply(NCS_WND_TEMPLATE* pwnd_tmpl) {
+        pwnd_tmpl->handlers = createHandlers();
+        pwnd_tmpl->notify_info = this;
+    }
+
+};
+
+
 }
 
 

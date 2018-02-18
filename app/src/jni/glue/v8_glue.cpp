@@ -175,91 +175,53 @@ static mWidget* getWidget(Isolate* isolate, Local<Value> value) {
 
 #include "widget_method.cpp"
 
-static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl, char* prefix) {
-    int len = strlen(prefix);
-#define _D_TMP(format, member) ALOGI("MiniGUIV8", "\t%s"#member "= " format, prefix, tmpl->member)
-    ALOGI("MiniGUIV8", "%s{", prefix);
-    _D_TMP("%s", class_name);
-    _D_TMP("%d", id);
-    _D_TMP("%d", x);
-    _D_TMP("%d", y);
-    _D_TMP("%d", w);
-    _D_TMP("%d", h);
-    _D_TMP("0x%08X", style);
-    _D_TMP("0x%08X", ex_style);
-    _D_TMP("%s", caption);
-    if (tmpl->props) {
-        for (int i = 0; tmpl->props[i].id > 0; i++) {
-            ALOGI("MiniGUIV8", "\t%sProp %d=0x%08x", prefix, tmpl->props[i].id, tmpl->props[i].value);
-        }
-    }
-    if (tmpl->rdr_info) {
-        ALOGI("MiniGUIV8", "\t%sglobal render=%s", tmpl->rdr_info->glb_rdr);
-        ALOGI("MiniGUIV8", "\t%scontrol render=%s", tmpl->rdr_info->ctl_rdr);
-        if (tmpl->rdr_info->elements) {
-            for(int i = 0; tmpl->rdr_info->elements[i].id > 0; i++) {
-                ALOGI("MiniGUIV8", "\t%sRdr %d=0x%08x", tmpl->rdr_info->elements[i].id, tmpl->rdr_info->elements[i].value);
-            }
-        }
-    }
-
-    if(tmpl->handlers) {
-        for (int i = 0; tmpl->handlers[i].handler != NULL; i++) {
-            ALOGI("MiniGUIV8", "\t%sHandler message 0x%08x: handler:%p", prefix, tmpl->handlers[i].message, tmpl->handlers[i].handler);
-        }
-    }
-
-    _D_TMP("0x%08x", bk_color);
-    _D_TMP("%s", font_name);
-
-    if (tmpl->ctrls) {
-        prefix[len] = '\t';
-        prefix[len+1] = '\0';
-        for (int i = 0; i < tmpl->count; i++) {
-            dumpWndTemplate(&tmpl->ctrls[i], prefix);
-        }
-        prefix[len] = '\0';
-    }
-
-    ALOGI("MiniGUIV8", "%s}", prefix);
-#undef _D_TMP
-}
-
-
-static void dumpWndTemplate(const NCS_WND_TEMPLATE* tmpl) {
-    char szPrefix[64] = "\0";
-    dumpWndTemplate(tmpl, szPrefix);
-}
-static void dumpWndTemplate(const NCS_MNWND_TEMPLATE* tmp) {
-    dumpWndTemplate((const NCS_WND_TEMPLATE*)tmp);
-}
-
 
 static void dumpV8Exception(v8::Isolate* isolate, v8::TryCatch* tryCatch);
 static Local<Object> wrap_widget_object(Isolate* isolate, mWidget* widget);
 
-class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
-    typedef map<int, Persistent<Function> >  FunctionMap;
-
-    FunctionMap functionMap;
-    Persistent<Object> widgetObject;
+struct V8Script {
+    typedef Persistent<Function> persistent_handler_t;
+    typedef Local<Function> local_handler_t;
+    typedef TEventHandlerManager<V8Script> manager_t;
+    manager_t* manager;
     Isolate * isolate;
+    Persistent<Object> widgetObject;
 
-    Local<Function> getHandler(int code) {
-        FunctionMap::iterator it = functionMap.find(code);
-        if (it == functionMap.end()) {
-            return Local<Function>();
-        }
-        return Local<Function>::New(isolate, it->second);
+    V8Script(manager_t *m, Isolate* i)
+    : manager(m), isolate(i)
+    {}
+
+    static bool isFunc(local_handler_t handler) {
+        return !handler.IsEmpty();
     }
 
+    static void addRef(local_handler_t ) { }
+    static void release(local_handler_t ) { }
+    static void addRef(persistent_handler_t ) { }
+    static void release(persistent_handler_t ) { }
 
-    Local<Value>  callFunc(int code, int argc, Local<Value> argv[]) {
+    void setWidgetObject(mWidget* self) {
+        widgetObject.Reset(isolate, wrap_widget_object(isolate, self));
+    }
+
+    void assign(local_handler_t& lh, const persistent_handler_t& ph) {
+        lh = Local<Function>::New(isolate, ph);
+    }
+
+    void assign(persistent_handler_t &ph, const local_handler_t& lh) {
+        ph.Reset(isolate, lh);
+    }
+
+    local_handler_t toNullLocal() {
+        return Local<Function>();
+    }
+
+    Local<Value> callFunc(int code, int argc, Local<Value> argv[]) {
 
         Local<Context> context = Local<Context>::New(isolate, sContext);
         Context::Scope context_scope(context);
 
-        Local<Function> func = getHandler(code);
+        Local<Function> func = manager->getHandler(code);
         if (func.IsEmpty()) {
             return Local<Value>();
         }
@@ -275,142 +237,6 @@ class EventHandlerManager : public NCS_CREATE_NOTIFY_INFO {
         }
         return result.ToLocalChecked();
     }
-
-    static void on_created(EventHandlerManager * self, mWidget* widget, DWORD special_id) {
-        self->onCreate(widget);
-    }
-
-    void onCreate(mWidget* widget) {
-        widgetObject.Reset(isolate, wrap_widget_object(isolate, widget));
-        SetWidgetEventHandlers(widget, (void*)this);
-    }
-
-
-    static BOOL do_onCreate(mWidget *self, DWORD dwAddData) {
-        EventHandlerManager * m = get_event_handler_manager(self);
-        if (m) {
-            m->call<void>(MSG_CREATE, (unsigned long)self);
-        }
-        return TRUE;
-    }
-
-#define DO_NO_VOID(name, message) \
-    static void do_##name(mWidget* self) { \
-        EventHandlerManager * m = get_event_handler_manager(self); \
-        if (m) { \
-            m->call<void>(message, (unsigned long)self); \
-        } \
-    }
-
-    DO_NO_VOID(onClose, MSG_CLOSE)
-
-    static void do_message(mWidget* self, int message) {
-        EventHandlerManager * m = get_event_handler_manager(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self);
-        }
-    }
-
-    static BOOL do_onKey(mWidget* self, int message, int scancode, DWORD key_status) {
-        EventHandlerManager * m = get_event_handler_manager(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self, scancode, key_status);
-        }
-        return NCSR_CONTINUE_MSG;
-    }
-
-    static BOOL do_onMouse(mWidget* self, int message, int x, int y, DWORD key_status) {
-        EventHandlerManager * m = get_event_handler_manager(self);
-        if (m) {
-            m->call<void>(message, (unsigned long)self, x, y, key_status);
-        }
-        return NCSR_CONTINUE_MSG;
-    }
-
-    static void do_onNotify(mWidget* self, int id, int nc, DWORD addData) {
-        EventHandlerManager * m = get_event_handler_manager(self);
-        if (m) {
-            m->call<void>(NCS_NOTIFY_CODE(nc), (unsigned long)self, id, addData);
-        }
-    }
-
-    static void* getNativeHandler(int id) {
-        switch(id) {
-        case MSG_CREATE: return (void*) do_onCreate;
-        case MSG_FONTCHANGED:
-        case MSG_DESTROY:
-        case MSG_SETFOCUS:
-        case MSG_KILLFOCUS:
-            return (void*) do_message;
-        case MSG_CLOSE:
-            return (void*) do_onClose;
-        case MSG_KEYDOWN:
-        case MSG_KEYUP:
-        case MSG_CHAR:
-        case MSG_SYSKEYDOWN:
-        case MSG_SYSKEYUP:
-        case MSG_SYSCHAR:
-        case MSG_KEYLONGPRESS:
-        case MSG_KEYALWAYSPRESS:
-            return (void*)do_onKey;
-        case MSG_LBUTTONDOWN:
-        case MSG_LBUTTONUP:
-        case MSG_MOUSEMOVE:
-        case MSG_RBUTTONDOWN:
-        case MSG_RBUTTONUP:
-        case MSG_RBUTTONDBLCLK:
-            return (void*)do_onMouse;
-        default:
-            if ((id & 0xFFFF0000) == 0xFFFF0000) {
-                return (void*)do_onNotify;
-            }
-        }
-        return NULL;
-    }
-
-public:
-
-    EventHandlerManager(Isolate *isolate) {
-        this->isolate = isolate;
-        this->onCreated = (void(*)(NCS_CREATE_NOTIFY_INFO*,mComponent*,DWORD))on_created;
-    }
-
-
-    static inline EventHandlerManager * get_event_handler_manager(mWidget *w) {
-        return (EventHandlerManager*) GetWidgetEventHandlers(w);
-    }
-
-
-    void addEventHanler(int code, Isolate* isolate, Local<Function> function) {
-        functionMap[code].Reset(isolate, function);
-    }
-
-    NCS_EVENT_HANDLER * createHandlers() {
-        int count = functionMap.size();
-        if (count <= 0) {
-            return NULL;
-        }
-        NCS_EVENT_HANDLER * handlers = new NCS_EVENT_HANDLER[count+1];
-        int i = 0;
-        for (FunctionMap::iterator it = functionMap.begin();
-                it != functionMap.end(); ++it) {
-            void *handle = getNativeHandler(it->first);
-            if (handle) {
-                handlers[i].message = it->first;
-                handlers[i].handler = handle;
-                i ++;
-            }
-        }
-        handlers[i].message = 0;
-        handlers[i].handler = NULL;
-        return handlers;
-    }
-
-    void apply(NCS_WND_TEMPLATE *pwnd_tmpl) {
-        pwnd_tmpl->handlers = createHandlers();
-        pwnd_tmpl->notify_info = this;
-    }
-
 
     template<typename R>
     R call(int code) {
@@ -476,8 +302,9 @@ public:
         };
         return (R)TypeValue<R>::From(isolate, callFunc(code, sizeof(args)/sizeof(args[0]), args));
     }
-
 };
+
+typedef TEventHandlerManager<V8Script> EventHandlerManager;
 
 
 
@@ -664,7 +491,7 @@ static void init_wnd_tmpl(NCS_WND_TEMPLATE* pwnd_tmpl, Isolate *isolate, Local<O
             if (pevent_handler_mgr == NULL) {
                 pevent_handler_mgr = new EventHandlerManager(isolate);
             }
-            pevent_handler_mgr->addEventHanler(message, isolate, Local<Function>::Cast(value));
+            pevent_handler_mgr->addEventHandler(message, Local<Function>::Cast(value));
         } else if (str_key == "Class") {
             continue; //class is replaced
         } else {
@@ -799,17 +626,17 @@ static void mg_MessageBox(const FunctionCallbackInfo<Value>& args) {
     MessageBox(parent ? parent->hwnd : HWND_DESKTOP, text.c_str(), caption.c_str(), style);
 }
 
-static void mg_DoModel(const FunctionCallbackInfo<Value>& args) {
+static void mg_DoModal(const FunctionCallbackInfo<Value>& args) {
     mWidget * parent = NULL;
     Isolate* isolate = args.GetIsolate();
     if (args.Length() < 2) {
-        isolate->ThrowException(toV8String(isolate, "DoModel need 2 paramters"));
+        isolate->ThrowException(toV8String(isolate, "DoModal need 2 paramters"));
         return ;
     }
     parent = getWidget(isolate, args[0]);
     Local<Object> wnd_tmpl_obj = args[1]->ToObject();
     if (wnd_tmpl_obj.IsEmpty()) {
-        isolate->ThrowException(toV8String(isolate, "DoModel recieve a un object paramters 1"));
+        isolate->ThrowException(toV8String(isolate, "DoModal recieve a un object paramters 1"));
         return ;
     }
 
@@ -905,7 +732,7 @@ static bool init_global_objects(Isolate *isolate, Local<Context> context) {
     tmpl->Set(toV8String(isolate, "CreateMainWindow"), FunctionTemplate::New(isolate, mg_createMainWindow));
     tmpl->Set(toV8String(isolate, "wrap"), FunctionTemplate::New(isolate, mg_wrapWidget));
     tmpl->Set(toV8String(isolate, "MessageBox"), FunctionTemplate::New(isolate, mg_MessageBox));
-    tmpl->Set(toV8String(isolate, "DoModel"), FunctionTemplate::New(isolate, mg_DoModel));
+    tmpl->Set(toV8String(isolate, "DoModal"), FunctionTemplate::New(isolate, mg_DoModal));
     tmpl->Set(toV8String(isolate, "findWnd"), FunctionTemplate::New(isolate, mg_findWnd));
     tmpl->Set(toV8String(isolate, "findWndObject"), FunctionTemplate::New(isolate, mg_findWndObject));
 
